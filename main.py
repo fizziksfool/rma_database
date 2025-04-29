@@ -19,6 +19,12 @@ def add_rma(
 ) -> None:
     session = SessionLocal()
 
+    rma = session.query(RMA).filter_by(rma_number=rma_number).first()
+
+    if rma:
+        print(f'RMA-{rma_number} already exists.')
+        return
+
     if not product:
         raise ValueError('Product dictionary is empty.')
 
@@ -93,9 +99,6 @@ if __name__ == '__main__':
             created_by='Joshua',
         )
 
-    read_rmas()
-    update_status('25001', 'Received')
-    read_rmas()
     add_rma(
         rma_number='25002',
         department='Hyperion',
