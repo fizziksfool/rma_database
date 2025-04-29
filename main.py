@@ -46,6 +46,7 @@ def add_rma(
     )
     session.add(new_rma)
     session.commit()
+    print(f'RMA-{rma_number} added to database.')
     session.close()
 
 
@@ -100,14 +101,14 @@ if __name__ == '__main__':
         )
 
     add_rma(
-        rma_number='25002',
+        rma_number='25003',
         department='Hyperion',
         customer='Cameca',
         product={'H201-bipolar': '18710'},
-        serial_number='559',
+        serial_number='600',
         is_warranty=False,
         reason_for_return='Refurbishment',
-        customer_po_number='CDA234567',
+        customer_po_number='CDA234568',
         created_by='Joshua',
     )
     read_rmas()
