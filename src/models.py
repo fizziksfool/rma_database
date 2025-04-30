@@ -2,37 +2,35 @@
 RMA dataclasses or SQLAlchemy models
 """
 
-from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 
-from sqlalchemy import Text
-from sqlalchemy.orm import Mapped, mapped_column
-
-from src.database import DB_PATH, Base, SessionLocal, initialize_database
+from database import DB_PATH, RMA, Customer, SessionLocal, initialize_database
 
 
-# === Table model ===
-class RMA(Base):
-    __tablename__ = 'rmas'
+def add_customer(customer_name: str) -> bool:
+    """
+    Adds a customer to the database.
 
-    rma_number: Mapped[str] = mapped_column(primary_key=True)
-    department: Mapped[str] = mapped_column()
-    customer: Mapped[str] = mapped_column()
-    product_description: Mapped[str] = mapped_column()
-    product_number: Mapped[str] = mapped_column()
-    serial_number: Mapped[str] = mapped_column()
-    is_warranty: Mapped[bool] = mapped_column()
-    reason_for_return: Mapped[str] = mapped_column(Text)
-    created_by: Mapped[str] = mapped_column()
-    status: Mapped[str] = mapped_column(default='Issued')
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.now, onupdate=datetime.now
-    )
-    work_order: Mapped[str] = mapped_column(nullable=True)
-    customer_po_number: Mapped[str] = mapped_column(nullable=True)
-    incoming_inspection_notes: Mapped[str] = mapped_column(Text, nullable=True)
-    resolution_notes: Mapped[str] = mapped_column(Text, nullable=True)
-    shipped_back_on: Mapped[datetime] = mapped_column(nullable=True)
+    Returns True if successful, False if customer already exists or input is invalid.
+    """
+    customer_name = customer_name.strip().lower()
+
+    if not customer_name:
+        return False
+
+    with SessionLocal() as session:
+        existing = session.query(Customer).filter_by(name=customer_name).first()
+        if existing:
+            return False
+
+        try:
+            new_customer = Customer(name=customer_name)
+            session.add(new_customer)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
 
 
 def add_rma(
@@ -80,14 +78,14 @@ def add_rma(
     session.close()
 
 
-def read_rmas():
+def read_rmas() -> None:
     session = SessionLocal()
     rmas = session.query(RMA).all()
     for rma in rmas:
         print(
             f'RMA Number: {rma.rma_number},\n'
             f'Customer: {rma.customer},\n'
-            f'Product: {rma.product_description},\n'
+            f'Product: {rma.product},\n'
             f'Status: {rma.status},\n'
             f'Created At: {rma.created_at}\n'
             f'Last updated at: {rma.updated_at}\n'
@@ -118,27 +116,3 @@ if __name__ == '__main__':
     # Only run database initialization routine if it doesn't already exist.
     if not DB_PATH.is_file():
         initialize_database()
-        add_rma(
-            rma_number='25001',
-            department='Hyperion',
-            customer='Cameca',
-            product={'H201-bipolar': '18710'},
-            serial_number='555',
-            is_warranty=False,
-            reason_for_return='Refurbishment',
-            customer_po_number='CDA123456',
-            created_by='Joshua',
-        )
-
-    add_rma(
-        rma_number='25003',
-        department='Hyperion',
-        customer='Cameca',
-        product={'H201-bipolar': '18710'},
-        serial_number='600',
-        is_warranty=False,
-        reason_for_return='Refurbishment',
-        customer_po_number='CDA234568',
-        created_by='Joshua',
-    )
-    read_rmas()
