@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 from qt_material import apply_stylesheet
 
 from src.gui.add_customer_window import AddCustomerWindow
+from src.gui.add_product_number_window import AddProductNumberWindow
 from src.gui.add_product_window import AddProductWindow
 
 
@@ -44,6 +45,10 @@ class MainWindow(QMainWindow):
     def _handle_add_product(self) -> None:
         add_product_window = AddProductWindow()
         add_product_window.exec()
+
+    def _handle_add_product_number(self) -> None:
+        add_product_number_window = AddProductNumberWindow()
+        add_product_number_window.exec()
 
     def create_gui(self) -> None:
         window_width = 550
@@ -81,17 +86,22 @@ class MainWindow(QMainWindow):
         self.exit_option = QAction('Exit', self)
         self.add_customer_option = QAction('Add New Customer', self)
         self.add_product_option = QAction('Add New Product', self)
+        self.add_product_number_option = QAction('Add New Part Number to Product')
         self.open_quick_start_guide = QAction('Quick Start Guide', self)
 
         # Add the action objects to the menu bar items
         self.file_menu.addAction(self.exit_option)
         self.options_menu.addAction(self.add_customer_option)
         self.options_menu.addAction(self.add_product_option)
+        self.options_menu.addAction(self.add_product_number_option)
         self.help_menu.addAction(self.open_quick_start_guide)
 
         self.exit_option.triggered.connect(self._handle_exit)
         self.add_customer_option.triggered.connect(self._handle_add_customer)
         self.add_product_option.triggered.connect(self._handle_add_product)
+        self.add_product_number_option.triggered.connect(
+            self._handle_add_product_number
+        )
 
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')

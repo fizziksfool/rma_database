@@ -74,6 +74,29 @@ def add_product(product_description: str, product_number: str) -> bool:
             return False
 
 
+def add_product_number(description_id: int, product_number: str) -> bool:
+    product_num = product_number.strip()
+
+    if not product_num:
+        return False
+
+    with SessionLocal() as session:
+        existing = session.query(ProductNumber).filter_by(number=product_num).first()
+        if existing:
+            return False
+
+        try:
+            new_number = ProductNumber(
+                number=product_num, description_id=description_id
+            )
+            session.add(new_number)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+
+
 def add_rma(
     rma_number: str,
     department: str,
