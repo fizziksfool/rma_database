@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 from qt_material import apply_stylesheet
 
 
-class AddCustomerWindow(QDialog):
+class AddProductWindow(QDialog):
     def __init__(self) -> None:
         super().__init__()
         self.installEventFilter(self)
@@ -28,27 +28,38 @@ class AddCustomerWindow(QDialog):
             return Path(__file__).resolve().parents[2]
 
     def create_gui(self) -> None:
-        self.setFixedSize(300, 100)
+        self.setFixedSize(300, 150)
 
         root_dir: Path = self._get_root_dir()
         icon_path: str = str(root_dir / 'assets' / 'icon.ico')
         self.setWindowIcon(QIcon(icon_path))
-        self.setWindowTitle('Add New Customer')
+        self.setWindowTitle('Add New Product')
 
         apply_stylesheet(self, theme='dark_lightgreen.xml', invert_secondary=True)
         self.setStyleSheet(
             self.styleSheet() + """QLineEdit, QTextEdit {color: lightgreen;}"""
         )
 
-        # Create form elements
-        self.name_label = QLabel('Customer Name:')
-        self.name_input = QLineEdit()
-        self.add_button = QPushButton('Add Customer')
-        self.add_button.clicked.connect(self.add_customer)
+        self.desc_label = QLabel('Product Description:')
+        self.desc_input = QLineEdit()
+
+        self.number_label = QLabel('Product Number:')
+        self.number_input = QLineEdit()
+
+        self.add_button = QPushButton('Add Product')
+        self.add_button.clicked.connect(self.add_product)
+
+        v_label_layout = QVBoxLayout()
+        v_label_layout.addWidget(self.desc_label)
+        v_label_layout.addWidget(self.number_label)
+
+        v_input_layout = QVBoxLayout()
+        v_input_layout.addWidget(self.desc_input)
+        v_input_layout.addWidget(self.number_input)
 
         h_layout = QHBoxLayout()
-        h_layout.addWidget(self.name_label)
-        h_layout.addWidget(self.name_input)
+        h_layout.addLayout(v_label_layout)
+        h_layout.addLayout(v_input_layout)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(h_layout)
@@ -56,20 +67,21 @@ class AddCustomerWindow(QDialog):
 
         self.setLayout(main_layout)
 
-    def add_customer(self) -> None:
+    def add_product(self) -> None:
         # Get customer name from input
-        customer_name = self.name_input.text()
+        product_desc = self.desc_input.text()
+        product_num = self.number_input.text()
 
         # Call your function to add the customer (make sure it’s imported)
-        from src.models import add_customer
+        from src.models import add_product
 
-        if add_customer(customer_name):
+        if add_product(product_desc, product_num):
             self.accept()
         else:
-            add_customer_failed_message(self)
+            add_product_failed_message(self)
 
 
-def add_customer_failed_message(parent) -> None:
+def add_product_failed_message(parent) -> None:
     title = 'Error'
-    message = 'Failed to add customer. Invalid entry or customer already exists.'
+    message = 'Failed to add product description and number. Invalid entry or product and number already exists.'
     QMessageBox.critical(parent, title, message)

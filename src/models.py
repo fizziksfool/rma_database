@@ -4,7 +4,15 @@ RMA dataclasses or SQLAlchemy models
 
 from sqlalchemy.exc import IntegrityError
 
-from src.database import DB_PATH, RMA, Customer, SessionLocal, initialize_database
+from src.database import (
+    DB_PATH,
+    RMA,
+    Customer,
+    ProductDescription,
+    ProductNumber,
+    SessionLocal,
+    initialize_database,
+)
 
 
 def add_customer(customer_name: str) -> bool:
@@ -26,6 +34,39 @@ def add_customer(customer_name: str) -> bool:
         try:
             new_customer = Customer(name=customer_name)
             session.add(new_customer)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+
+
+def add_product(product_description: str, product_number: str) -> bool:
+    product_desc = product_description.strip().lower()
+    product_num = product_number.strip()
+
+    if not product_desc or not product_num:
+        return False
+
+    with SessionLocal() as session:
+        existing_desc = (
+            session.query(ProductDescription).filter_by(name=product_desc).first()
+        )
+        existing_num = (
+            session.query(ProductNumber).filter_by(number=product_num).first()
+        )
+        if existing_desc or existing_num:
+            return False
+
+        try:
+            # Add product description
+            new_desc = ProductDescription(name=product_desc)
+            session.add(new_desc)
+            session.flush()  # Get new_desc.id before committing
+
+            # Add product number linked to the description
+            new_number = ProductNumber(number=product_num, description_id=new_desc.id)
+            session.add(new_number)
             session.commit()
             return True
         except IntegrityError:

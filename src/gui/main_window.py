@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 from qt_material import apply_stylesheet
 
 from src.gui.add_customer_window import AddCustomerWindow
+from src.gui.add_product_window import AddProductWindow
 
 
 class MainWindow(QMainWindow):
@@ -46,6 +47,10 @@ class MainWindow(QMainWindow):
     def _handle_add_customer(self) -> None:
         add_customer_window = AddCustomerWindow()
         add_customer_window.exec()
+
+    def _handle_add_product(self) -> None:
+        add_product_window = AddProductWindow()
+        add_product_window.exec()
 
     def create_gui(self) -> None:
         input_box_width = 130
@@ -95,6 +100,7 @@ class MainWindow(QMainWindow):
 
         self.exit_option.triggered.connect(self._handle_exit)
         self.add_customer_option.triggered.connect(self._handle_add_customer)
+        self.add_product_option.triggered.connect(self._handle_add_product)
 
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')
