@@ -51,7 +51,7 @@ class AddProductNumberWindow(QDialog):
         self.number_label = QLabel('Part Number:')
         self.number_input = QLineEdit()
         self.add_button = QPushButton('Add Part Number')
-        self.add_button.clicked.connect(self.add_product_number)
+        self.add_button.clicked.connect(self.add_part_number)
 
         v_label_layout = QVBoxLayout()
         v_label_layout.addWidget(self.desc_label)
@@ -81,19 +81,19 @@ class AddProductNumberWindow(QDialog):
             for desc in descriptions:
                 self.desc_combo.addItem(desc.name, desc.id)
 
-    def add_product_number(self) -> None:
+    def add_part_number(self) -> None:
         description_id = self.desc_combo.currentData()
         number = self.number_input.text()
 
-        from src.models import add_product_number
+        from src.models import add_part_number
 
-        if add_product_number(description_id, number):
+        if add_part_number(description_id, number):
             self.accept()
         else:
-            add_product_number_failed_message(self)
+            add_part_number_failed_message(self)
 
 
-def add_product_number_failed_message(parent) -> None:
+def add_part_number_failed_message(parent) -> None:
     title = 'Error'
     message = (
         'Failed to add product number. Invalid entry or product number already exists.'

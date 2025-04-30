@@ -74,7 +74,7 @@ def add_product(product_description: str, product_number: str) -> bool:
             return False
 
 
-def add_product_number(description_id: int, product_number: str) -> bool:
+def add_part_number(description_id: int, product_number: str) -> bool:
     product_num = product_number.strip()
 
     if not product_num:
