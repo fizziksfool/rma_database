@@ -4,7 +4,7 @@ RMA dataclasses or SQLAlchemy models
 
 from sqlalchemy.exc import IntegrityError
 
-from database import DB_PATH, RMA, Customer, SessionLocal, initialize_database
+from src.database import DB_PATH, RMA, Customer, SessionLocal, initialize_database
 
 
 def add_customer(customer_name: str) -> bool:
