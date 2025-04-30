@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QVBoxLayout,
-    QWidget,
 )
 from qt_material import apply_stylesheet
 
