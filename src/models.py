@@ -156,24 +156,25 @@ def read_rmas() -> None:
         )
 
 
-def update_status(rma_number: str, new_status: str) -> None:
-    session = SessionLocal()
-    rma = session.query(RMA).filter_by(rma_number=rma_number).first()
+def update_status(rma_number: str, new_status: str) -> bool:
+    with SessionLocal() as session:
+        rma = session.query(RMA).filter_by(rma_number=rma_number).first()
 
-    if not rma:
-        print(f'RMA {rma_number} not found.')
-        return
+        if not rma:
+            print(f'RMA {rma_number} not found.')
+            return False
 
-    if rma.status == new_status:
-        print(f'RMA-{rma_number} status is alread "{new_status}"')
-        return
+        if rma.status == new_status:
+            print(f'RMA-{rma_number} status is alread "{new_status}"')
+            return False
 
-    print(
-        f'Updating status for RMA {rma_number} from "{rma.status}" to "{new_status}."'
-    )
-    rma.status = new_status
-    session.commit()
-    session.close()
+        try:
+            rma.status = new_status
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
 
 
 if __name__ == '__main__':
