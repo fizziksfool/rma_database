@@ -106,3 +106,7 @@ class RMA(Base):
 def initialize_database() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(engine)
+
+
+if __name__ == '__main__':
+    initialize_database()
