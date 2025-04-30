@@ -5,19 +5,12 @@ Main Window
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QObject, QRegularExpression, Qt, Signal
-from PySide6.QtGui import QAction, QIcon, QMouseEvent, QRegularExpressionValidator
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
-    QFileDialog,
-    QFrame,
-    QGridLayout,
     QHBoxLayout,
-    QLabel,
-    QLineEdit,
     QMainWindow,
-    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -53,8 +46,6 @@ class MainWindow(QMainWindow):
         add_product_window.exec()
 
     def create_gui(self) -> None:
-        input_box_width = 130
-        input_box_height = 28
         window_width = 550
         window_height = 500
 
@@ -71,8 +62,8 @@ class MainWindow(QMainWindow):
         )
 
         # Create the validator for numerical inputs
-        number_regex = QRegularExpression(r'^-?\d*\.?\d*$')
-        validator = QRegularExpressionValidator(number_regex)
+        # number_regex = QRegularExpression(r'^-?\d*\.?\d*$')
+        # validator = QRegularExpressionValidator(number_regex)
         # '^-?': Matches an optional - at the beginning
         # '\d*': Matches zero or more digits
         # '\.?': Matches an optional decimal point
