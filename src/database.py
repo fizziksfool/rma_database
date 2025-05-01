@@ -36,6 +36,15 @@ class Base(DeclarativeBase):
     pass
 
 
+class User(Base):
+    __tablename__ = 'users'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True)
+
+    rmas: Mapped[list['RMA']] = relationship(back_populates='issued_by')
+
+
 class Customer(Base):
     __tablename__ = 'customers'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -74,28 +83,31 @@ class RMA(Base):
     __tablename__ = 'rmas'
 
     rma_number: Mapped[str] = mapped_column(primary_key=True)
+
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'))
+    customer: Mapped['Customer'] = relationship(back_populates='rmas')
     department_id: Mapped[int] = mapped_column(ForeignKey('departments.id'))
+    department: Mapped['Department'] = relationship(back_populates='rmas')
     product_number_id: Mapped[int] = mapped_column(ForeignKey('product_numbers.id'))
+    product_number: Mapped['ProductNumber'] = relationship(back_populates='rmas')
+    issued_by_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    issued_by: Mapped['User'] = relationship(back_populates='rmas')
 
     serial_number: Mapped[str] = mapped_column(String(50))
     is_warranty: Mapped[bool] = mapped_column(Boolean)
     reason_for_return: Mapped[str] = mapped_column(Text)
-    work_order: Mapped[str] = mapped_column(String(50))
+
     status: Mapped[str] = mapped_column(String, default='Issued')
-    created_by: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, onupdate=datetime.now
     )
-    customer_po_number: Mapped[str] = mapped_column(String(50))
+
+    customer_po_number: Mapped[str] = mapped_column(String(50), nullable=True)
+    work_order: Mapped[str] = mapped_column(String(50), nullable=True)
     incoming_inspection_notes: Mapped[str] = mapped_column(Text, nullable=True)
     resolution_notes: Mapped[str] = mapped_column(Text, nullable=True)
     shipped_back_on: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-
-    customer: Mapped['Customer'] = relationship(back_populates='rmas')
-    department: Mapped['Department'] = relationship(back_populates='rmas')
-    product_number: Mapped['ProductNumber'] = relationship(back_populates='rmas')
 
     @property
     def product(self) -> str:
