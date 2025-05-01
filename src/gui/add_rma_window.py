@@ -102,20 +102,20 @@ class AddNewRMAWindow(QDialog):
             self.part_numbers = session.query(ProductNumber).all()
             self.users = session.query(User).all()
 
-            for dept in self.departments:
-                self.department_cbb.addItem(dept.name, dept.id)
+        for dept in self.departments:
+            self.department_cbb.addItem(dept.name, dept.id)
 
-            for cust in self.customers:
-                self.customer_cbb.addItem(cust.name, cust.id)
+        for cust in self.customers:
+            self.customer_cbb.addItem(cust.name, cust.id)
 
-            for prod in self.products:
-                self.product_cbb.addItem(prod.name, prod.id)
+        for prod in self.products:
+            self.product_cbb.addItem(prod.name, prod.id)
 
-            for part_num in self.part_numbers:
-                self.part_number_cbb.addItem(part_num.number, part_num.id)
+        for part_num in self.part_numbers:
+            self.part_number_cbb.addItem(part_num.number, part_num.id)
 
-            for user in self.users:
-                self.user_cbb.addItem(user.name, user.id)
+        for user in self.users:
+            self.user_cbb.addItem(user.name, user.id)
 
     def add_new_rma(self) -> None:
         rma_number = self.rma_number_input.text()
