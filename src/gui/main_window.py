@@ -39,15 +39,15 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     def _handle_add_customer(self) -> None:
-        add_customer_window = AddCustomerWindow()
+        add_customer_window = AddCustomerWindow(self)
         add_customer_window.exec()
 
     def _handle_add_product(self) -> None:
-        add_product_window = AddProductWindow()
+        add_product_window = AddProductWindow(self)
         add_product_window.exec()
 
     def _handle_add_product_number(self) -> None:
-        add_product_number_window = AddProductNumberWindow()
+        add_product_number_window = AddProductNumberWindow(self)
         add_product_number_window.exec()
 
     def create_gui(self) -> None:

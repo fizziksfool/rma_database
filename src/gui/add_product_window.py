@@ -16,29 +16,14 @@ from qt_material import apply_stylesheet
 
 
 class AddProductWindow(QDialog):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
         self.installEventFilter(self)
         self.create_gui()
 
-    def _get_root_dir(self) -> Path:
-        if getattr(sys, 'frozen', False):  # Check if running from the PyInstaller EXE
-            return Path(getattr(sys, '_MEIPASS', '.'))
-        else:  # Running in a normal Python environment
-            return Path(__file__).resolve().parents[2]
-
     def create_gui(self) -> None:
         self.setFixedSize(300, 150)
-
-        root_dir: Path = self._get_root_dir()
-        icon_path: str = str(root_dir / 'assets' / 'icon.ico')
-        self.setWindowIcon(QIcon(icon_path))
         self.setWindowTitle('Add New Product')
-
-        apply_stylesheet(self, theme='dark_lightgreen.xml', invert_secondary=True)
-        self.setStyleSheet(
-            self.styleSheet() + """QLineEdit, QTextEdit {color: lightgreen;}"""
-        )
 
         self.desc_label = QLabel('Product Description:')
         self.desc_input = QLineEdit()
