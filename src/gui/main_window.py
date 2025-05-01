@@ -21,6 +21,7 @@ from src.gui.add_customer_window import AddCustomerWindow
 from src.gui.add_product_number_window import AddProductNumberWindow
 from src.gui.add_product_window import AddProductWindow
 from src.gui.add_rma_window import AddNewRMAWindow
+from src.gui.add_user_window import AddUserWindow
 from src.gui.view_open_rmas_window import ViewOpenRMAsWindow
 
 
@@ -42,6 +43,10 @@ class MainWindow(QMainWindow):
 
     def _handle_add_customer(self) -> None:
         add_customer_window = AddCustomerWindow(self)
+        add_customer_window.exec()
+
+    def _handle_add_user(self) -> None:
+        add_customer_window = AddUserWindow(self)
         add_customer_window.exec()
 
     def _handle_add_product(self) -> None:
@@ -97,6 +102,7 @@ class MainWindow(QMainWindow):
         self.add_customer_option = QAction('Add New Customer', self)
         self.add_product_option = QAction('Add New Product', self)
         self.add_product_number_option = QAction('Add New Part Number to Product')
+        self.add_user_option = QAction('Add New User', self)
         self.open_quick_start_guide = QAction('Quick Start Guide', self)
 
         # Add the action objects to the menu bar items
@@ -104,6 +110,7 @@ class MainWindow(QMainWindow):
         self.options_menu.addAction(self.add_customer_option)
         self.options_menu.addAction(self.add_product_option)
         self.options_menu.addAction(self.add_product_number_option)
+        self.options_menu.addAction(self.add_user_option)
         self.help_menu.addAction(self.open_quick_start_guide)
 
         self.exit_option.triggered.connect(self._handle_exit)
@@ -112,6 +119,7 @@ class MainWindow(QMainWindow):
         self.add_product_number_option.triggered.connect(
             self._handle_add_product_number
         )
+        self.add_user_option.triggered.connect(self._handle_add_user)
 
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')

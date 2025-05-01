@@ -12,6 +12,7 @@ from src.database import (
     ProductDescription,
     ProductNumber,
     SessionLocal,
+    User,
     initialize_database,
 )
 
@@ -35,6 +36,32 @@ def add_customer(customer_name: str) -> bool:
         try:
             new_customer = Customer(name=customer_name)
             session.add(new_customer)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+
+
+def add_user(user_name: str) -> bool:
+    """
+    Adds a customer to the database.
+
+    Returns True if successful, False if customer already exists or input is invalid.
+    """
+    user_name = user_name.strip().lower()
+
+    if not user_name:
+        return False
+
+    with SessionLocal() as session:
+        existing = session.query(User).filter_by(name=user_name).first()
+        if existing:
+            return False
+
+        try:
+            new_user = User(name=user_name)
+            session.add(new_user)
             session.commit()
             return True
         except IntegrityError:
