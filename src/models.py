@@ -1,8 +1,7 @@
-"""
-RMA dataclasses or SQLAlchemy models
-"""
+from datetime import datetime
 
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -143,49 +142,55 @@ def view_open_rmas(table: QTableWidget) -> None:
                 table.setColumnWidth(col, column_width_default)
 
 
+def generate_rma_number() -> str:
+    year_prefix = datetime.now().strftime('%y')
+    base = int(year_prefix) * 1000
+
+    with SessionLocal() as session:
+        latest = (
+            session.query(func.max(RMA.rma_number))
+            .filter(RMA.rma_number.like(f'{year_prefix}%'))
+            .scalar()
+        )
+
+        if latest:
+            return str(int(latest) + 1)
+        else:
+            return str(base + 1)
+
+
 def add_rma(
     rma_number: str,
-    department: str,
-    customer: str,
-    product: dict[str, str],
+    department_id: int,
+    customer_id: int,
+    product_id: int,
+    product_number_id: int,
     serial_number: str,
-    is_warranty: bool,
     reason_for_return: str,
-    customer_po_number: str,
-    created_by: str,
-    notes: str | None = None,
-) -> None:
-    session = SessionLocal()
-
-    rma = session.query(RMA).filter_by(rma_number=rma_number).first()
-
-    if rma:
-        print(f'RMA-{rma_number} already exists.')
-        return
-
-    if not product:
-        raise ValueError('Product dictionary is empty.')
-
-    product_description, product_number = next(iter(product.items()))
-
-    # Add new RMA
-    new_rma = RMA(
-        rma_number=rma_number,
-        department=department,  # Hyperion, E-Gun, FIBSL
-        customer=customer,  # Cameca, JEOL, UCLA, University of Hawaii, etc.
-        product_description=product_description,  # H201-positive, H201-bipolar, H200, H100, VRG, HEUv1, HEUv2, HEUv3
-        product_number=product_number,  # Should be linked to product description and customer
-        serial_number=serial_number,
-        is_warranty=is_warranty,
-        reason_for_return=reason_for_return,
-        customer_po_number=customer_po_number,
-        incoming_inspection_notes=notes,
-        created_by=created_by,  # Authorized users?
-    )
-    session.add(new_rma)
-    session.commit()
-    print(f'RMA-{rma_number} added to database.')
-    session.close()
+    created_by_id: int,
+    is_warranty: bool,
+    customer_po: str | None = None,
+) -> bool:
+    with SessionLocal() as session:
+        try:
+            new_rma = RMA(
+                rma_number=rma_number,
+                department_id=department_id,
+                customer_id=customer_id,
+                product_id=product_id,
+                product_number_id=product_number_id,
+                serial_number=serial_number,
+                reason_for_return=reason_for_return,
+                created_by_id=created_by_id,
+                is_warranty=is_warranty,
+                customer_po=customer_po,
+            )
+            session.add(new_rma)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            return False
 
 
 def update_status(rma_number: str, new_status: str) -> bool:
