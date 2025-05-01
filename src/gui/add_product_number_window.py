@@ -16,7 +16,6 @@ from src.models import add_part_number
 class AddProductNumberWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.installEventFilter(self)
         self.create_gui()
 
     def create_gui(self) -> None:
