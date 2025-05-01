@@ -9,6 +9,7 @@ from src.database import (
     DB_PATH,
     RMA,
     Customer,
+    Department,
     ProductDescription,
     ProductNumber,
     SessionLocal,
@@ -45,9 +46,9 @@ def add_customer(customer_name: str) -> bool:
 
 def add_user(user_name: str) -> bool:
     """
-    Adds a customer to the database.
+    Adds a user to the database.
 
-    Returns True if successful, False if customer already exists or input is invalid.
+    Returns True if successful, False if department already exists or input is invalid.
     """
     user_name = user_name.strip().lower()
 
@@ -62,6 +63,32 @@ def add_user(user_name: str) -> bool:
         try:
             new_user = User(name=user_name)
             session.add(new_user)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+
+
+def add_department(dept_name: str) -> bool:
+    """
+    Adds a department to the database.
+
+    Returns True if successful, False if department already exists or input is invalid.
+    """
+    dept_name = dept_name.strip().lower()
+
+    if not dept_name:
+        return False
+
+    with SessionLocal() as session:
+        existing = session.query(Department).filter_by(name=dept_name).first()
+        if existing:
+            return False
+
+        try:
+            new_dept = Department(name=dept_name)
+            session.add(new_dept)
             session.commit()
             return True
         except IntegrityError:
