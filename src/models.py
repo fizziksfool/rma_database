@@ -2,7 +2,9 @@
 RMA dataclasses or SQLAlchemy models
 """
 
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from src.database import (
     DB_PATH,
@@ -97,6 +99,50 @@ def add_part_number(description_id: int, product_number: str) -> bool:
             return False
 
 
+def view_open_rmas(table: QTableWidget) -> None:
+    columns_to_view: list[str] = [
+        'RMA #',
+        'Customer',
+        'Product',
+        'Part #',
+        'Reason For Return',
+        'Status',
+    ]
+
+    with SessionLocal() as session:
+        open_rmas = (
+            session.query(RMA)
+            .options(
+                joinedload(RMA.product_number).joinedload(ProductNumber.description),
+                joinedload(RMA.customer),
+            )
+            .filter(RMA.status != 'Closed')
+            .order_by(RMA.rma_number)
+            .all()
+        )
+
+        table.setRowCount(len(open_rmas))
+        table.setColumnCount(len(columns_to_view))
+        table.setHorizontalHeaderLabels(columns_to_view)
+
+        for row, rma in enumerate(open_rmas):
+            table.setItem(row, 0, QTableWidgetItem(rma.rma_number))
+            table.setItem(row, 1, QTableWidgetItem(rma.customer.name))
+            table.setItem(row, 2, QTableWidgetItem(rma.product))
+            table.setItem(row, 3, QTableWidgetItem(rma.product_number.number))
+            table.setItem(row, 4, QTableWidgetItem(rma.reason_for_return))
+            table.setItem(row, 5, QTableWidgetItem(rma.status))
+
+        column_width_default = 130  # pixels
+        column_width_wide = 200  # pixels
+
+        for col, header in enumerate(columns_to_view):
+            if header == 'Reason For Return':
+                table.setColumnWidth(col, column_width_wide)
+            else:
+                table.setColumnWidth(col, column_width_default)
+
+
 def add_rma(
     rma_number: str,
     department: str,
@@ -140,20 +186,6 @@ def add_rma(
     session.commit()
     print(f'RMA-{rma_number} added to database.')
     session.close()
-
-
-def read_rmas() -> None:
-    session = SessionLocal()
-    rmas = session.query(RMA).all()
-    for rma in rmas:
-        print(
-            f'RMA Number: {rma.rma_number},\n'
-            f'Customer: {rma.customer},\n'
-            f'Product: {rma.product},\n'
-            f'Status: {rma.status},\n'
-            f'Created At: {rma.created_at}\n'
-            f'Last updated at: {rma.updated_at}\n'
-        )
 
 
 def update_status(rma_number: str, new_status: str) -> bool:

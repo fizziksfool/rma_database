@@ -20,6 +20,7 @@ from qt_material import apply_stylesheet
 from src.gui.add_customer_window import AddCustomerWindow
 from src.gui.add_product_number_window import AddProductNumberWindow
 from src.gui.add_product_window import AddProductWindow
+from src.gui.view_open_rmas_window import ViewOpenRMAsWindow
 
 
 class MainWindow(QMainWindow):
@@ -49,6 +50,10 @@ class MainWindow(QMainWindow):
     def _handle_add_product_number(self) -> None:
         add_product_number_window = AddProductNumberWindow(self)
         add_product_number_window.exec()
+
+    def _handle_view_open_rmas_button(self) -> None:
+        view_open_rmas_window = ViewOpenRMAsWindow(self)
+        view_open_rmas_window.exec()
 
     def create_gui(self) -> None:
         window_width = 550
@@ -108,13 +113,15 @@ class MainWindow(QMainWindow):
         self.add_new_rma_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.open_rma_form_button = QPushButton('Open RMA Form')
         self.open_rma_form_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.open_rma_table_button = QPushButton('Open RMA Table')
-        self.open_rma_table_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.view_open_rmas_button = QPushButton('View Open RMAs')
+        self.view_open_rmas_button.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self.view_open_rmas_button.clicked.connect(self._handle_view_open_rmas_button)
 
         v_button_layout = QVBoxLayout()
         v_button_layout.addWidget(self.add_new_rma_button)
         v_button_layout.addWidget(self.open_rma_form_button)
-        v_button_layout.addWidget(self.open_rma_table_button)
+        v_button_layout.addWidget(self.view_open_rmas_button)
 
         main_layout = QHBoxLayout()
         main_layout.addLayout(v_button_layout)
