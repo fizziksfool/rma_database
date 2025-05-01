@@ -1,8 +1,3 @@
-# add_customer_window.py
-import sys
-from pathlib import Path
-
-from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -12,7 +7,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
-from qt_material import apply_stylesheet
 
 
 class AddCustomerWindow(QDialog):
@@ -20,12 +14,6 @@ class AddCustomerWindow(QDialog):
         super().__init__(parent)
         self.installEventFilter(self)
         self.create_gui()
-
-    def _get_root_dir(self) -> Path:
-        if getattr(sys, 'frozen', False):  # Check if running from the PyInstaller EXE
-            return Path(getattr(sys, '_MEIPASS', '.'))
-        else:  # Running in a normal Python environment
-            return Path(__file__).resolve().parents[2]
 
     def create_gui(self) -> None:
         self.setFixedSize(300, 100)
