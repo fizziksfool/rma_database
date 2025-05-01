@@ -43,7 +43,7 @@ class AddProductWindow(QDialog):
         self.desc_label = QLabel('Product Description:')
         self.desc_input = QLineEdit()
 
-        self.number_label = QLabel('Product Number:')
+        self.number_label = QLabel('Part Number:')
         self.number_input = QLineEdit()
 
         self.add_button = QPushButton('Add Product')
