@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.database import ProductDescription, SessionLocal
+from src.models import add_part_number
 
 
 class AddProductNumberWindow(QDialog):
@@ -63,8 +64,6 @@ class AddProductNumberWindow(QDialog):
     def add_part_number(self) -> None:
         description_id = self.desc_combo.currentData()
         number = self.number_input.text()
-
-        from src.models import add_part_number
 
         if add_part_number(description_id, number):
             self.accept()

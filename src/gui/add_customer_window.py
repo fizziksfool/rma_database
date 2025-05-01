@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from src.models import add_customer
+
 
 class AddCustomerWindow(QDialog):
     def __init__(self, parent=None) -> None:
@@ -36,11 +38,7 @@ class AddCustomerWindow(QDialog):
         self.setLayout(main_layout)
 
     def add_customer(self) -> None:
-        # Get customer name from input
         customer_name = self.name_input.text()
-
-        # Call your function to add the customer (make sure it’s imported)
-        from src.models import add_customer
 
         if add_customer(customer_name):
             self.accept()
