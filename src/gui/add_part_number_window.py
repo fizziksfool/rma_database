@@ -9,24 +9,24 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from src.database import ProductDescription, SessionLocal
+from src.database import Product, SessionLocal
 from src.models import add_part_number
 
 
-class AddProductNumberWindow(QDialog):
+class AddPartNumberWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.create_gui()
 
     def create_gui(self) -> None:
         self.setFixedSize(300, 150)
-        self.setWindowTitle('Add New Customer')
+        self.setWindowTitle('Add New Part Number')
 
         # Create form elements
-        self.desc_label = QLabel('Select Product Description:')
+        self.desc_label = QLabel('Select Product:')
         self.desc_combo = QComboBox()
         self.desc_combo.setStyleSheet('color: lightgreen;')
-        self.load_product_descriptions()
+        self.load_products()
         self.number_label = QLabel('Part Number:')
         self.number_input = QLineEdit()
         self.add_button = QPushButton('Add Part Number')
@@ -50,21 +50,17 @@ class AddProductNumberWindow(QDialog):
 
         self.setLayout(main_layout)
 
-    def load_product_descriptions(self) -> None:
+    def load_products(self) -> None:
         with SessionLocal() as session:
-            descriptions = (
-                session.query(ProductDescription)
-                .order_by(ProductDescription.name)
-                .all()
-            )
-            for desc in descriptions:
-                self.desc_combo.addItem(desc.name, desc.id)
+            products = session.query(Product).order_by(Product.name).all()
+            for prod in products:
+                self.desc_combo.addItem(prod.name, prod.id)
 
     def add_part_number(self) -> None:
-        description_id = self.desc_combo.currentData()
+        product_id = self.desc_combo.currentData()
         number = self.number_input.text()
 
-        if add_part_number(description_id, number):
+        if add_part_number(product_id, number):
             self.accept()
         else:
             add_part_number_failed_message(self)

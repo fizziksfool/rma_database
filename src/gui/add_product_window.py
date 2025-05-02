@@ -20,7 +20,7 @@ class AddProductWindow(QDialog):
         self.setFixedSize(300, 150)
         self.setWindowTitle('Add New Product')
 
-        self.desc_label = QLabel('Product Description:')
+        self.desc_label = QLabel('Product:')
         self.desc_input = QLineEdit()
 
         self.number_label = QLabel('Part Number:')
@@ -59,5 +59,5 @@ class AddProductWindow(QDialog):
 
 def add_product_failed_message(parent) -> None:
     title = 'Error'
-    message = 'Failed to add product description and number. Invalid entry or product and number already exists.'
+    message = 'Failed to add product and number. Invalid entry or product and number already exists.'
     QMessageBox.critical(parent, title, message)

@@ -1,7 +1,3 @@
-"""
-Main Window
-"""
-
 import sys
 from pathlib import Path
 
@@ -18,10 +14,9 @@ from PySide6.QtWidgets import (
 from qt_material import apply_stylesheet
 
 from src.gui.add_customer_window import AddCustomerWindow
-from src.gui.add_department_window import AddDepartmentWindow
-from src.gui.add_product_number_window import AddProductNumberWindow
+from src.gui.add_part_number_window import AddPartNumberWindow
 from src.gui.add_product_window import AddProductWindow
-from src.gui.add_rma_window import AddNewRMAWindow
+from src.gui.add_rma_window import AddRMAWindow
 from src.gui.add_user_window import AddUserWindow
 from src.gui.view_open_rmas_window import ViewOpenRMAsWindow
 
@@ -54,20 +49,16 @@ class MainWindow(QMainWindow):
         add_product_window = AddProductWindow(self)
         add_product_window.exec()
 
-    def _handle_add_product_number(self) -> None:
-        add_product_number_window = AddProductNumberWindow(self)
-        add_product_number_window.exec()
-
-    def _handle_add_department(self) -> None:
-        add_department_window = AddDepartmentWindow(self)
-        add_department_window.exec()
+    def _handle_add_part_number(self) -> None:
+        add_part_number_window = AddPartNumberWindow(self)
+        add_part_number_window.exec()
 
     def _handle_view_open_rmas_button(self) -> None:
         view_open_rmas_window = ViewOpenRMAsWindow(self)
         view_open_rmas_window.exec()
 
     def _handle_add_new_rma_button(self) -> None:
-        add_new_rma_window = AddNewRMAWindow(self)
+        add_new_rma_window = AddRMAWindow(self)
         add_new_rma_window.exec()
 
     def create_gui(self) -> None:
@@ -106,28 +97,23 @@ class MainWindow(QMainWindow):
         self.exit_option = QAction('Exit', self)
         self.add_customer_option = QAction('Add New Customer', self)
         self.add_product_option = QAction('Add New Product', self)
-        self.add_product_number_option = QAction('Add New Part Number to Product')
+        self.add_part_number_option = QAction('Add New Part Number to Product', self)
         self.add_user_option = QAction('Add New User', self)
-        self.add_department_option = QAction('Add New Department', self)
         self.open_quick_start_guide = QAction('Quick Start Guide', self)
 
         # Add the action objects to the menu bar items
         self.file_menu.addAction(self.exit_option)
         self.options_menu.addAction(self.add_customer_option)
         self.options_menu.addAction(self.add_product_option)
-        self.options_menu.addAction(self.add_product_number_option)
+        self.options_menu.addAction(self.add_part_number_option)
         self.options_menu.addAction(self.add_user_option)
-        self.options_menu.addAction(self.add_department_option)
         self.help_menu.addAction(self.open_quick_start_guide)
 
         self.exit_option.triggered.connect(self._handle_exit)
         self.add_customer_option.triggered.connect(self._handle_add_customer)
         self.add_product_option.triggered.connect(self._handle_add_product)
-        self.add_product_number_option.triggered.connect(
-            self._handle_add_product_number
-        )
+        self.add_part_number_option.triggered.connect(self._handle_add_part_number)
         self.add_user_option.triggered.connect(self._handle_add_user)
-        self.add_department_option.triggered.connect(self._handle_add_department)
 
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')

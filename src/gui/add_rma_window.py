@@ -1,5 +1,3 @@
-# new_rma_window.py
-
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -12,11 +10,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from src.database import Customer, Department, ProductDescription, ProductNumber, User
+from src.database import Customer, PartNumber, Product, User
 from src.models import SessionLocal, add_rma, generate_rma_number
 
 
-class AddNewRMAWindow(QDialog):
+class AddRMAWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         generated_rma_number: str = generate_rma_number()
@@ -28,7 +26,6 @@ class AddNewRMAWindow(QDialog):
         self.setWindowTitle('New RMA Entry')
 
         self.rma_number_label = QLabel('RMA #:')
-        self.department_label = QLabel('Department:')
         self.customer_label = QLabel('Customer:')
         self.product_label = QLabel('Product:')
         self.part_number_label = QLabel('Part #:')
@@ -38,8 +35,6 @@ class AddNewRMAWindow(QDialog):
         self.customer_po_label = QLabel('Customer PO #:')
         self.warranty_label = QLabel('Warranty')
 
-        self.department_cbb = QComboBox()
-        self.department_cbb.setStyleSheet('color: lightgreen;')
         self.customer_cbb = QComboBox()
         self.customer_cbb.setStyleSheet('color: lightgreen;')
         self.product_cbb = QComboBox()
@@ -62,7 +57,6 @@ class AddNewRMAWindow(QDialog):
 
         v_label_layout = QVBoxLayout()
         v_label_layout.addWidget(self.rma_number_label)
-        v_label_layout.addWidget(self.department_label)
         v_label_layout.addWidget(self.customer_label)
         v_label_layout.addWidget(self.product_label)
         v_label_layout.addWidget(self.part_number_label)
@@ -74,7 +68,6 @@ class AddNewRMAWindow(QDialog):
 
         v_input_layout = QVBoxLayout()
         v_input_layout.addWidget(self.rma_number_input)
-        v_input_layout.addWidget(self.department_cbb)
         v_input_layout.addWidget(self.customer_cbb)
         v_input_layout.addWidget(self.product_cbb)
         v_input_layout.addWidget(self.part_number_cbb)
@@ -96,20 +89,17 @@ class AddNewRMAWindow(QDialog):
 
     def load_combobox_data(self) -> None:
         with SessionLocal() as session:
-            self.departments = session.query(Department).all()
             self.customers = session.query(Customer).all()
-            self.products = session.query(ProductDescription).all()
-            self.part_numbers = session.query(ProductNumber).all()
+            self.products = session.query(Product).all()
+            self.part_numbers = session.query(PartNumber).all()
             self.users = session.query(User).all()
-
-        for dept in self.departments:
-            self.department_cbb.addItem(dept.name, dept.id)
 
         for cust in self.customers:
             self.customer_cbb.addItem(cust.name, cust.id)
 
         for prod in self.products:
             self.product_cbb.addItem(prod.name, prod.id)
+            print(f'{prod.name} {prod.id = }')
 
         for part_num in self.part_numbers:
             self.part_number_cbb.addItem(part_num.number, part_num.id)
@@ -119,30 +109,26 @@ class AddNewRMAWindow(QDialog):
 
     def add_new_rma(self) -> None:
         rma_number = self.rma_number_input.text()
-        department_id = self.department_cbb.currentData()
         customer_id = self.customer_cbb.currentData()
-        product_id = self.customer_cbb.currentData()
-        product_number_id = self.part_number_cbb.currentData()
+        part_number_id = self.part_number_cbb.currentData()
         serial_number = self.serial_number_input.text()
         reason_for_return = self.reason_input.text()
-        created_by_id = self.user_cbb.currentData()
+        issued_by_id = self.user_cbb.currentData()
         is_warranty = self.warranty_cb.isChecked()
-        customer_po = self.customer_po_input.text()
+        customer_po_number = self.customer_po_input.text()
 
-        if not customer_po:
-            customer_po = None
+        if not customer_po_number:
+            customer_po_number = None
 
         if add_rma(
             rma_number=rma_number,
-            department_id=department_id,
             customer_id=customer_id,
-            product_id=product_id,
-            product_number_id=product_number_id,
+            part_number_id=part_number_id,
             serial_number=serial_number,
             reason_for_return=reason_for_return,
-            created_by_id=created_by_id,
+            issued_by_id=issued_by_id,
             is_warranty=is_warranty,
-            customer_po=customer_po,
+            customer_po_number=customer_po_number,
         ):
             self.accept()
         else:

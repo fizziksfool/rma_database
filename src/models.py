@@ -9,9 +9,8 @@ from src.database import (
     DB_PATH,
     RMA,
     Customer,
-    Department,
-    ProductDescription,
-    ProductNumber,
+    PartNumber,
+    Product,
     SessionLocal,
     User,
     initialize_database,
@@ -48,7 +47,7 @@ def add_user(user_name: str) -> bool:
     """
     Adds a user to the database.
 
-    Returns True if successful, False if department already exists or input is invalid.
+    Returns True if successful, False if user already exists or input is invalid.
     """
     user_name = user_name.strip().lower()
 
@@ -70,57 +69,27 @@ def add_user(user_name: str) -> bool:
             return False
 
 
-def add_department(dept_name: str) -> bool:
-    """
-    Adds a department to the database.
+def add_product(product: str, part_number: str) -> bool:
+    prod = product.strip().lower()
+    part_num = part_number.strip()
 
-    Returns True if successful, False if department already exists or input is invalid.
-    """
-    dept_name = dept_name.strip().lower()
-
-    if not dept_name:
+    if not prod or not part_num:
         return False
 
     with SessionLocal() as session:
-        existing = session.query(Department).filter_by(name=dept_name).first()
-        if existing:
+        existing_product = session.query(Product).filter_by(name=prod).first()
+        existing_part_num = session.query(PartNumber).filter_by(number=part_num).first()
+        if existing_product or existing_part_num:
             return False
 
         try:
-            new_dept = Department(name=dept_name)
-            session.add(new_dept)
-            session.commit()
-            return True
-        except IntegrityError:
-            session.rollback()
-            return False
+            # Add product
+            new_prod = Product(name=prod)
+            session.add(new_prod)
+            session.flush()  # Get new_prod.id before committing
 
-
-def add_product(product_description: str, product_number: str) -> bool:
-    product_desc = product_description.strip().lower()
-    product_num = product_number.strip()
-
-    if not product_desc or not product_num:
-        return False
-
-    with SessionLocal() as session:
-        existing_desc = (
-            session.query(ProductDescription).filter_by(name=product_desc).first()
-        )
-        existing_num = (
-            session.query(ProductNumber).filter_by(number=product_num).first()
-        )
-        if existing_desc or existing_num:
-            return False
-
-        try:
-            # Add product description
-            new_desc = ProductDescription(name=product_desc)
-            session.add(new_desc)
-            session.flush()  # Get new_desc.id before committing
-
-            # Add product number linked to the description
-            new_number = ProductNumber(number=product_num, description_id=new_desc.id)
+            # Add product number linked to the product
+            new_number = PartNumber(number=part_num, product_id=new_prod.id)
             session.add(new_number)
             session.commit()
             return True
@@ -129,21 +98,19 @@ def add_product(product_description: str, product_number: str) -> bool:
             return False
 
 
-def add_part_number(description_id: int, product_number: str) -> bool:
-    product_num = product_number.strip()
+def add_part_number(product_id: int, part_number: str) -> bool:
+    part_num = part_number.strip()
 
-    if not product_num:
+    if not part_num:
         return False
 
     with SessionLocal() as session:
-        existing = session.query(ProductNumber).filter_by(number=product_num).first()
-        if existing:
+        existing_part_num = session.query(PartNumber).filter_by(number=part_num).first()
+        if existing_part_num:
             return False
 
         try:
-            new_number = ProductNumber(
-                number=product_num, description_id=description_id
-            )
+            new_number = PartNumber(number=part_num, product_id=product_id)
             session.add(new_number)
             session.commit()
             return True
@@ -166,7 +133,7 @@ def view_open_rmas(table: QTableWidget) -> None:
         open_rmas = (
             session.query(RMA)
             .options(
-                joinedload(RMA.product_number).joinedload(ProductNumber.description),
+                joinedload(RMA.part_number).joinedload(PartNumber.product),
                 joinedload(RMA.customer),
             )
             .filter(RMA.status != 'Closed')
@@ -181,8 +148,8 @@ def view_open_rmas(table: QTableWidget) -> None:
         for row, rma in enumerate(open_rmas):
             table.setItem(row, 0, QTableWidgetItem(rma.rma_number))
             table.setItem(row, 1, QTableWidgetItem(rma.customer.name))
-            table.setItem(row, 2, QTableWidgetItem(rma.product))
-            table.setItem(row, 3, QTableWidgetItem(rma.product_number.number))
+            table.setItem(row, 2, QTableWidgetItem(rma.part_number.product.name))
+            table.setItem(row, 3, QTableWidgetItem(rma.part_number.number))
             table.setItem(row, 4, QTableWidgetItem(rma.reason_for_return))
             table.setItem(row, 5, QTableWidgetItem(rma.status))
 
@@ -215,34 +182,31 @@ def generate_rma_number() -> str:
 
 def add_rma(
     rma_number: str,
-    department_id: int,
     customer_id: int,
-    product_id: int,
-    product_number_id: int,
+    part_number_id: int,
     serial_number: str,
     reason_for_return: str,
-    created_by_id: int,
+    issued_by_id: int,
     is_warranty: bool,
-    customer_po: str | None = None,
+    customer_po_number: str | None = None,
 ) -> bool:
     with SessionLocal() as session:
         try:
             new_rma = RMA(
                 rma_number=rma_number,
-                department_id=department_id,
                 customer_id=customer_id,
-                product_id=product_id,
-                product_number_id=product_number_id,
+                part_number_id=part_number_id,
                 serial_number=serial_number,
                 reason_for_return=reason_for_return,
-                created_by_id=created_by_id,
+                issued_by_id=issued_by_id,
                 is_warranty=is_warranty,
-                customer_po=customer_po,
+                customer_po_number=customer_po_number,
             )
             session.add(new_rma)
             session.commit()
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             session.rollback()
             return False
 
