@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -18,8 +20,10 @@ class AddRMAWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         generated_rma_number: str = generate_rma_number()
+        self.part_numbers_by_product = defaultdict(list)
         self.create_gui(generated_rma_number)
         self.load_combobox_data()
+        self.update_part_numbers()
 
     def create_gui(self, generated_rma_number: str) -> None:
         self.setFixedSize(400, 500)
@@ -39,6 +43,7 @@ class AddRMAWindow(QDialog):
         self.customer_cbb.setStyleSheet('color: lightgreen;')
         self.product_cbb = QComboBox()
         self.product_cbb.setStyleSheet('color: lightgreen;')
+        self.product_cbb.currentIndexChanged.connect(self.update_part_numbers)
         self.part_number_cbb = QComboBox()
         self.part_number_cbb.setStyleSheet('color: lightgreen;')
         self.user_cbb = QComboBox()
@@ -91,21 +96,29 @@ class AddRMAWindow(QDialog):
         with SessionLocal() as session:
             self.customers = session.query(Customer).all()
             self.products = session.query(Product).all()
-            self.part_numbers = session.query(PartNumber).all()
             self.users = session.query(User).all()
+            part_numbers = session.query(PartNumber).all()
 
         for cust in self.customers:
             self.customer_cbb.addItem(cust.name, cust.id)
 
         for prod in self.products:
             self.product_cbb.addItem(prod.name, prod.id)
-            print(f'{prod.name} {prod.id = }')
-
-        for part_num in self.part_numbers:
-            self.part_number_cbb.addItem(part_num.number, part_num.id)
 
         for user in self.users:
             self.user_cbb.addItem(user.name, user.id)
+
+        for num in part_numbers:
+            self.part_numbers_by_product[num.product_id].append(num)
+
+    def update_part_numbers(self) -> None:
+        selected_product_id = self.product_cbb.currentData()
+        self.part_number_cbb.clear()
+
+        if selected_product_id is not None:
+            matching_parts = self.part_numbers_by_product.get(selected_product_id, [])
+            for part in matching_parts:
+                self.part_number_cbb.addItem(part.number, part.id)
 
     def add_new_rma(self) -> None:
         rma_number = self.rma_number_input.text()
