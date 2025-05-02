@@ -1,18 +1,49 @@
-from PySide6.QtWidgets import QDialog, QTableView, QVBoxLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QTableView,
+    QVBoxLayout,
+)
 from sqlalchemy.orm import joinedload
 
 from src.database import RMA, PartNumber, SessionLocal
-from src.models import OpenRMAsTableModel
+from src.models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
 
 
 class ViewOpenRMAsWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle('View Open RMAs')
-
-        layout = QVBoxLayout(self)
         self.table_view = QTableView(self)
-        layout.addWidget(self.table_view)
+
+        self.filter_customer_cbb = QComboBox(self)
+        self.filter_customer_cbb.setStyleSheet('color: lightgreen;')
+        self.filter_customer_cbb.currentTextChanged.connect(self.apply_customer_filter)
+
+        self.filter_product_cbb = QComboBox(self)
+        self.filter_product_cbb.setStyleSheet('color: lightgreen;')
+        self.filter_product_cbb.currentTextChanged.connect(self.apply_product_filter)
+
+        filter_labels_layout = QVBoxLayout()
+        filter_boxes_layout = QVBoxLayout()
+        filters_layout = QHBoxLayout()
+
+        filter_labels_layout.addWidget(QLabel('Filter by Customer:'))
+        filter_labels_layout.addWidget(QLabel('Filter by Product:'))
+        filter_boxes_layout.addWidget(self.filter_customer_cbb)
+        filter_boxes_layout.addWidget(self.filter_product_cbb)
+
+        filters_layout.addLayout(filter_labels_layout)
+        filters_layout.addLayout(filter_boxes_layout)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addLayout(filters_layout)
+        main_layout.addWidget(self.table_view)
+
+        self.setLayout(main_layout)
 
         self.load_data()
 
@@ -29,9 +60,27 @@ class ViewOpenRMAsWindow(QDialog):
                 .all()
             )
 
+        products = sorted({rma.part_number.product.name for rma in open_rmas})
+        customers = sorted({rma.customer.name for rma in open_rmas})
+
+        self.filter_customer_cbb.blockSignals(True)  # prevent premature filtering
+        self.filter_customer_cbb.clear()
+        self.filter_customer_cbb.addItem('All Customers')
+        self.filter_customer_cbb.addItems(customers)
+        self.filter_customer_cbb.blockSignals(False)
+
+        self.filter_product_cbb.blockSignals(True)  # prevent premature filtering
+        self.filter_product_cbb.clear()
+        self.filter_product_cbb.addItem('All Products')
+        self.filter_product_cbb.addItems(products)
+        self.filter_product_cbb.blockSignals(False)
+
         self.model = OpenRMAsTableModel(open_rmas)
-        self.table_view.setModel(self.model)
+        self.proxy_model = OpenRMAsSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.model)
+        self.table_view.setModel(self.proxy_model)
         self.table_view.setSortingEnabled(True)
+        self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # RMA number ascending
 
         for col, header in enumerate(self.model.headers):
             if header == 'Reason For Return':
@@ -40,6 +89,12 @@ class ViewOpenRMAsWindow(QDialog):
                 self.table_view.setColumnWidth(col, 130)
 
         self.adjust_window_size()
+
+    def apply_customer_filter(self, customer: str) -> None:
+        self.proxy_model.set_customer_filter(customer)
+
+    def apply_product_filter(self, product: str) -> None:
+        self.proxy_model.set_product_filter(product)
 
     def adjust_window_size(self) -> None:
         """
