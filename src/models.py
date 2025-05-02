@@ -126,6 +126,7 @@ def view_open_rmas(table: QTableWidget) -> None:
         'Product',
         'Part #',
         'Reason For Return',
+        'Warranty',
         'Status',
     ]
 
@@ -151,7 +152,9 @@ def view_open_rmas(table: QTableWidget) -> None:
             table.setItem(row, 2, QTableWidgetItem(rma.part_number.product.name))
             table.setItem(row, 3, QTableWidgetItem(rma.part_number.number))
             table.setItem(row, 4, QTableWidgetItem(rma.reason_for_return))
-            table.setItem(row, 5, QTableWidgetItem(rma.status))
+            warranty_text = 'Yes' if rma.is_warranty else 'No'
+            table.setItem(row, 5, QTableWidgetItem(warranty_text))
+            table.setItem(row, 6, QTableWidgetItem(rma.status))
 
         column_width_default = 130  # pixels
         column_width_wide = 200  # pixels
