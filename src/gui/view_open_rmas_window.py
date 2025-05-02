@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
-    QHBoxLayout,
+    QGridLayout,
     QLabel,
     QTableView,
     QVBoxLayout,
@@ -19,25 +19,35 @@ class ViewOpenRMAsWindow(QDialog):
         self.setWindowTitle('View Open RMAs')
         self.table_view = QTableView(self)
 
+        self.filter_customer_label = QLabel('Filter by Customer:')
         self.filter_customer_cbb = QComboBox(self)
         self.filter_customer_cbb.setStyleSheet('color: lightgreen;')
         self.filter_customer_cbb.currentTextChanged.connect(self.apply_customer_filter)
 
+        self.filter_product_label = QLabel('Filter by Product:')
         self.filter_product_cbb = QComboBox(self)
         self.filter_product_cbb.setStyleSheet('color: lightgreen;')
         self.filter_product_cbb.currentTextChanged.connect(self.apply_product_filter)
 
-        self.filter_labels_layout = QVBoxLayout()
-        self.filter_boxes_layout = QVBoxLayout()
-        self.filters_layout = QHBoxLayout()
+        self.filter_warranty_label = QLabel('Filter Warranty:')
+        self.filter_warranty_cbb = QComboBox(self)
+        self.filter_warranty_cbb.setStyleSheet('color: lightgreen;')
+        self.filter_warranty_cbb.currentTextChanged.connect(self.apply_warranty_filter)
 
-        self.filter_labels_layout.addWidget(QLabel('Filter by Customer:'))
-        self.filter_labels_layout.addWidget(QLabel('Filter by Product:'))
-        self.filter_boxes_layout.addWidget(self.filter_customer_cbb)
-        self.filter_boxes_layout.addWidget(self.filter_product_cbb)
+        self.filter_status_label = QLabel('Filter Status:')
+        self.filter_status_cbb = QComboBox(self)
+        self.filter_status_cbb.setStyleSheet('color: lightgreen;')
+        self.filter_status_cbb.currentTextChanged.connect(self.apply_status_filter)
 
-        self.filters_layout.addLayout(self.filter_labels_layout)
-        self.filters_layout.addLayout(self.filter_boxes_layout)
+        self.filters_layout = QGridLayout()
+        self.filters_layout.addWidget(self.filter_customer_label, 0, 0)
+        self.filters_layout.addWidget(self.filter_customer_cbb, 0, 1)
+        self.filters_layout.addWidget(self.filter_product_label, 1, 0)
+        self.filters_layout.addWidget(self.filter_product_cbb, 1, 1)
+        self.filters_layout.addWidget(self.filter_warranty_label, 0, 2)
+        self.filters_layout.addWidget(self.filter_warranty_cbb, 0, 3)
+        self.filters_layout.addWidget(self.filter_status_label, 1, 2)
+        self.filters_layout.addWidget(self.filter_status_cbb, 1, 3)
 
         main_layout = QVBoxLayout(self)
         main_layout.addLayout(self.filters_layout)
@@ -62,6 +72,8 @@ class ViewOpenRMAsWindow(QDialog):
 
         products = sorted({rma.part_number.product.name for rma in open_rmas})
         customers = sorted({rma.customer.name for rma in open_rmas})
+        warranties = sorted({'Yes' if rma.is_warranty else 'No' for rma in open_rmas})
+        statuses = sorted({rma.status for rma in open_rmas})
 
         self.filter_customer_cbb.blockSignals(True)  # prevent premature filtering
         self.filter_customer_cbb.clear()
@@ -74,6 +86,18 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_product_cbb.addItem('All Products')
         self.filter_product_cbb.addItems(products)
         self.filter_product_cbb.blockSignals(False)
+
+        self.filter_warranty_cbb.blockSignals(True)  # prevent premature filtering
+        self.filter_warranty_cbb.clear()
+        self.filter_warranty_cbb.addItem('Any')
+        self.filter_warranty_cbb.addItems(warranties)
+        self.filter_warranty_cbb.blockSignals(False)
+
+        self.filter_status_cbb.blockSignals(True)  # prevent premature filtering
+        self.filter_status_cbb.clear()
+        self.filter_status_cbb.addItem('All')
+        self.filter_status_cbb.addItems(statuses)
+        self.filter_status_cbb.blockSignals(False)
 
         self.model = OpenRMAsTableModel(open_rmas)
         self.proxy_model = OpenRMAsSortFilterProxyModel()
@@ -95,6 +119,12 @@ class ViewOpenRMAsWindow(QDialog):
 
     def apply_product_filter(self, product: str) -> None:
         self.proxy_model.set_product_filter(product)
+
+    def apply_warranty_filter(self, warranty: str) -> None:
+        self.proxy_model.set_warranty_filter(warranty)
+
+    def apply_status_filter(self, warranty: str) -> None:
+        self.proxy_model.set_status_filter(warranty)
 
     def adjust_window_size(self) -> None:
         """

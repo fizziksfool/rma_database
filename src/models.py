@@ -299,6 +299,8 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
         super().__init__(parent)
         self.customer_filter = ''
         self.product_filter = ''
+        self.warranty_filter = ''
+        self.status_filter = ''
 
     def set_customer_filter(self, customer_name: str) -> None:
         if customer_name == 'All Customers':
@@ -312,6 +314,20 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
             self.product_filter = ''
         else:
             self.product_filter = product_name
+        self.invalidateFilter()
+
+    def set_warranty_filter(self, warranty: str) -> None:
+        if warranty == 'Any':
+            self.warranty_filter = ''
+        else:
+            self.warranty_filter = warranty
+        self.invalidateFilter()
+
+    def set_status_filter(self, status: str) -> None:
+        if status == 'All':
+            self.status_filter = ''
+        else:
+            self.status_filter = status
         self.invalidateFilter()
 
     def filterAcceptsRow(self, source_row: int, source_parent) -> bool:
@@ -328,5 +344,17 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
             product_index = model.index(source_row, 2, source_parent)
             if product_index.data() != self.product_filter:
                 return False
+
+        # Warranty filter (column 5)
+        if self.warranty_filter:
+            warranty_index = model.index(source_row, 5, source_parent)
+            if warranty_index.data() != self.warranty_filter:
+                return False
+
+            # Status filter (column 6)
+            if self.status_filter:
+                status_index = model.index(source_row, 6, source_parent)
+                if status_index.data() != self.status_filter:
+                    return False
 
         return True
