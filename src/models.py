@@ -1,9 +1,9 @@
 from datetime import datetime
+from typing import Any, Literal
 
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, QPersistentModelIndex, Qt
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 
 from src.database import (
     RMA,
@@ -117,52 +117,6 @@ def add_part_number(product_id: int, part_number: str) -> bool:
             return False
 
 
-def view_open_rmas(table: QTableWidget) -> None:
-    columns_to_view: list[str] = [
-        'RMA #',
-        'Customer',
-        'Product',
-        'Part #',
-        'Reason For Return',
-        'Warranty',
-        'Status',
-    ]
-
-    with SessionLocal() as session:
-        open_rmas = (
-            session.query(RMA)
-            .options(
-                joinedload(RMA.part_number).joinedload(PartNumber.product),
-                joinedload(RMA.customer),
-            )
-            .filter(RMA.status != 'Closed')
-            .order_by(RMA.rma_number)
-            .all()
-        )
-
-        table.setRowCount(len(open_rmas))
-        table.setColumnCount(len(columns_to_view))
-        table.setHorizontalHeaderLabels(columns_to_view)
-
-        for row, rma in enumerate(open_rmas):
-            table.setItem(row, 0, QTableWidgetItem(rma.rma_number))
-            table.setItem(row, 1, QTableWidgetItem(rma.customer.name))
-            table.setItem(row, 2, QTableWidgetItem(rma.part_number.product.name))
-            table.setItem(row, 3, QTableWidgetItem(rma.part_number.number))
-            table.setItem(row, 4, QTableWidgetItem(rma.reason_for_return))
-            table.setItem(row, 5, QTableWidgetItem('Yes' if rma.is_warranty else 'No'))
-            table.setItem(row, 6, QTableWidgetItem(rma.status))
-
-        column_width_default = 130  # pixels
-        column_width_wide = 200  # pixels
-
-        for col, header in enumerate(columns_to_view):
-            if header == 'Reason For Return':
-                table.setColumnWidth(col, column_width_wide)
-            else:
-                table.setColumnWidth(col, column_width_default)
-
-
 def generate_rma_number() -> str:
     year_prefix = datetime.now().strftime('%y')
     base = int(year_prefix) * 1000
@@ -230,3 +184,62 @@ def update_status(rma_number: str, new_status: str) -> bool:
         except IntegrityError:
             session.rollback()
             return False
+
+
+class OpenRMAsTableModel(QAbstractTableModel):
+    def __init__(self, rmas: list[RMA], parent=None) -> None:
+        super().__init__(parent)
+        self.rmas = rmas
+        self.headers = [
+            'RMA #',
+            'Customer',
+            'Product',
+            'Part #',
+            'Reason For Return',
+            'Warranty',
+            'Status',
+        ]
+
+    def rowCount(self, parent=None) -> int:
+        return len(self.rmas)
+
+    def columnCount(self, parent=None) -> int:
+        return len(self.headers)
+
+    def data(
+        self,
+        index: QModelIndex | QPersistentModelIndex,
+        role: int = Qt.ItemDataRole.DisplayRole,
+    ) -> None | Any | Literal['Yes'] | Literal['No']:
+        if not index.isValid() or role != Qt.ItemDataRole.DisplayRole:
+            return None
+
+        rma = self.rmas[index.row()]
+        col = index.column()
+
+        if col == 0:
+            return rma.rma_number
+        elif col == 1:
+            return rma.customer.name
+        elif col == 2:
+            return rma.part_number.product.name
+        elif col == 3:
+            return rma.part_number.number
+        elif col == 4:
+            return rma.reason_for_return
+        elif col == 5:
+            return 'Yes' if rma.is_warranty else 'No'
+        elif col == 6:
+            return rma.status
+
+        return None
+
+    def headerData(
+        self, section, orientation, role: int = Qt.ItemDataRole.DisplayRole
+    ) -> None | list[str] | str:
+        if role != Qt.ItemDataRole.DisplayRole:
+            return None
+        if orientation == Qt.Orientation.Horizontal:
+            return self.headers[section]
+        else:
+            return str(section + 1)

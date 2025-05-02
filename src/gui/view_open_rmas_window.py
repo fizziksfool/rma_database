@@ -1,46 +1,47 @@
-# view_open_rmas_window.py
+from PySide6.QtWidgets import QDialog, QTableView, QVBoxLayout
+from sqlalchemy.orm import joinedload
 
-from PySide6.QtWidgets import (
-    QDialog,
-    QLabel,
-    QMessageBox,
-    QTableWidget,
-    QVBoxLayout,
-)
-
-from src.models import view_open_rmas
+from src.database import RMA, PartNumber, SessionLocal
+from src.models import OpenRMAsTableModel
 
 
 class ViewOpenRMAsWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.create_gui()
+        self.setWindowTitle('View Open RMAs')
+
+        layout = QVBoxLayout(self)
+        self.table_view = QTableView(self)
+        layout.addWidget(self.table_view)
+
         self.load_data()
 
-    def create_gui(self) -> None:
-        self.setWindowTitle('Open RMAs')
-
-        layout = QVBoxLayout()
-
-        self.label = QLabel('Open RMAs:')
-        self.table = QTableWidget()
-        self.table.setSortingEnabled(True)
-
-        layout.addWidget(self.label)
-        layout.addWidget(self.table)
-
-        self.setLayout(layout)
-
     def load_data(self) -> None:
-        try:
-            view_open_rmas(self.table)
-            self.adjust_table_and_window_size()
-        except Exception as e:
-            QMessageBox.critical(
-                self, 'Database Error', f'Failed to load open RMAs:\n{e}'
+        with SessionLocal() as session:
+            open_rmas = (
+                session.query(RMA)
+                .options(
+                    joinedload(RMA.part_number).joinedload(PartNumber.product),
+                    joinedload(RMA.customer),
+                )
+                .filter(RMA.status != 'Closed')
+                .order_by(RMA.rma_number)
+                .all()
             )
 
-    def adjust_table_and_window_size(self) -> None:
+        self.model = OpenRMAsTableModel(open_rmas)
+        self.table_view.setModel(self.model)
+        self.table_view.setSortingEnabled(True)
+
+        for col, header in enumerate(self.model.headers):
+            if header == 'Reason For Return':
+                self.table_view.setColumnWidth(col, 200)
+            else:
+                self.table_view.setColumnWidth(col, 130)
+
+        self.adjust_window_size()
+
+    def adjust_window_size(self) -> None:
         """
         Adjusts the size of the dialog window to fit the contents of the table.
 
@@ -54,19 +55,19 @@ class ViewOpenRMAsWindow(QDialog):
             This adjustment is typically called after populating the table with data
             and calling resizeColumnsToContents().
         """
-        header = self.table.horizontalHeader()
+        header = self.table_view.horizontalHeader()
         headers_width = sum(header.sectionSize(i) for i in range(header.count()))
 
-        index_width = self.table.verticalHeader().width()
+        index_width = self.table_view.verticalHeader().width()
 
         scrollbar_width = (
-            self.table.verticalScrollBar().isVisible()
-            * self.table.verticalScrollBar().sizeHint().width()
+            self.table_view.verticalScrollBar().isVisible()
+            * self.table_view.verticalScrollBar().sizeHint().width()
         )
 
         padding = 20
 
         full_width = index_width + headers_width + scrollbar_width + padding
-        full_height = self.table.verticalHeader().length() + header.height() + 100
+        full_height = self.table_view.verticalHeader().length() + header.height() + 100
 
         self.resize(full_width, full_height)
