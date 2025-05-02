@@ -24,6 +24,7 @@ class ViewOpenRMAsWindow(QDialog):
 
         self.label = QLabel('Open RMAs:')
         self.table = QTableWidget()
+        self.table.setSortingEnabled(True)
 
         layout.addWidget(self.label)
         layout.addWidget(self.table)
@@ -54,12 +55,18 @@ class ViewOpenRMAsWindow(QDialog):
             and calling resizeColumnsToContents().
         """
         header = self.table.horizontalHeader()
-        total_width = sum(header.sectionSize(i) for i in range(header.count()))
+        headers_width = sum(header.sectionSize(i) for i in range(header.count()))
 
-        scrollbar_width = self.table.verticalScrollBar().sizeHint().width()
-        padding = 15
+        index_width = self.table.verticalHeader().width()
 
-        full_width = total_width + scrollbar_width + padding
+        scrollbar_width = (
+            self.table.verticalScrollBar().isVisible()
+            * self.table.verticalScrollBar().sizeHint().width()
+        )
+
+        padding = 20
+
+        full_width = index_width + headers_width + scrollbar_width + padding
         full_height = self.table.verticalHeader().length() + header.height() + 100
 
         self.resize(full_width, full_height)
