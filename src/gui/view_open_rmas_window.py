@@ -29,24 +29,32 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_product_cbb.setStyleSheet('color: lightgreen;')
         self.filter_product_cbb.currentTextChanged.connect(self.apply_product_filter)
 
-        self.filter_warranty_label = QLabel('Filter Warranty:')
+        self.filter_warranty_label = QLabel('Filter by Warranty:')
         self.filter_warranty_cbb = QComboBox(self)
         self.filter_warranty_cbb.setStyleSheet('color: lightgreen;')
         self.filter_warranty_cbb.currentTextChanged.connect(self.apply_warranty_filter)
 
-        self.filter_status_label = QLabel('Filter Status:')
+        self.filter_status_label = QLabel('Filter by Status:')
         self.filter_status_cbb = QComboBox(self)
         self.filter_status_cbb.setStyleSheet('color: lightgreen;')
         self.filter_status_cbb.currentTextChanged.connect(self.apply_status_filter)
 
         self.filters_layout = QGridLayout()
-        self.filters_layout.addWidget(self.filter_customer_label, 0, 0)
+        self.filters_layout.addWidget(
+            self.filter_customer_label, 0, 0, Qt.AlignmentFlag.AlignRight
+        )
         self.filters_layout.addWidget(self.filter_customer_cbb, 0, 1)
-        self.filters_layout.addWidget(self.filter_product_label, 1, 0)
+        self.filters_layout.addWidget(
+            self.filter_product_label, 1, 0, Qt.AlignmentFlag.AlignRight
+        )
         self.filters_layout.addWidget(self.filter_product_cbb, 1, 1)
-        self.filters_layout.addWidget(self.filter_warranty_label, 0, 2)
+        self.filters_layout.addWidget(
+            self.filter_warranty_label, 0, 2, Qt.AlignmentFlag.AlignRight
+        )
         self.filters_layout.addWidget(self.filter_warranty_cbb, 0, 3)
-        self.filters_layout.addWidget(self.filter_status_label, 1, 2)
+        self.filters_layout.addWidget(
+            self.filter_status_label, 1, 2, Qt.AlignmentFlag.AlignRight
+        )
         self.filters_layout.addWidget(self.filter_status_cbb, 1, 3)
 
         main_layout = QVBoxLayout(self)
