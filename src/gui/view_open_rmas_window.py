@@ -27,20 +27,20 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_product_cbb.setStyleSheet('color: lightgreen;')
         self.filter_product_cbb.currentTextChanged.connect(self.apply_product_filter)
 
-        filter_labels_layout = QVBoxLayout()
-        filter_boxes_layout = QVBoxLayout()
-        filters_layout = QHBoxLayout()
+        self.filter_labels_layout = QVBoxLayout()
+        self.filter_boxes_layout = QVBoxLayout()
+        self.filters_layout = QHBoxLayout()
 
-        filter_labels_layout.addWidget(QLabel('Filter by Customer:'))
-        filter_labels_layout.addWidget(QLabel('Filter by Product:'))
-        filter_boxes_layout.addWidget(self.filter_customer_cbb)
-        filter_boxes_layout.addWidget(self.filter_product_cbb)
+        self.filter_labels_layout.addWidget(QLabel('Filter by Customer:'))
+        self.filter_labels_layout.addWidget(QLabel('Filter by Product:'))
+        self.filter_boxes_layout.addWidget(self.filter_customer_cbb)
+        self.filter_boxes_layout.addWidget(self.filter_product_cbb)
 
-        filters_layout.addLayout(filter_labels_layout)
-        filters_layout.addLayout(filter_boxes_layout)
+        self.filters_layout.addLayout(self.filter_labels_layout)
+        self.filters_layout.addLayout(self.filter_boxes_layout)
 
         main_layout = QVBoxLayout(self)
-        main_layout.addLayout(filters_layout)
+        main_layout.addLayout(self.filters_layout)
         main_layout.addWidget(self.table_view)
 
         self.setLayout(main_layout)
@@ -112,17 +112,34 @@ class ViewOpenRMAsWindow(QDialog):
         """
         header = self.table_view.horizontalHeader()
         headers_width = sum(header.sectionSize(i) for i in range(header.count()))
-
         index_width = self.table_view.verticalHeader().width()
-
         scrollbar_width = (
             self.table_view.verticalScrollBar().isVisible()
             * self.table_view.verticalScrollBar().sizeHint().width()
         )
+        horizontal_padding = 20
 
-        padding = 20
+        row_count = self.table_view.model().rowCount()
+        row_height = self.table_view.verticalHeader().defaultSectionSize()
+        header_height = header.height()
+        filter_customer_height = self.filter_customer_cbb.sizeHint().height()
+        filter_product_height = self.filter_product_cbb.sizeHint().height()
+        filter_label_height = 2 * QLabel().sizeHint().height()
+        filters_height = (
+            filter_customer_height + filter_product_height + filter_label_height + 10
+        )  # +spacing
 
-        full_width = index_width + headers_width + scrollbar_width + padding
-        full_height = self.table_view.verticalHeader().length() + header.height() + 100
+        vertical_padding = 60  # Additional padding for margins, layout spacing, etc.
 
-        self.resize(full_width, full_height)
+        full_height = (
+            filters_height + (row_height * row_count) + header_height + vertical_padding
+        )
+        full_width = index_width + headers_width + scrollbar_width + horizontal_padding
+
+        max_width = 1920
+        max_height = 1080
+
+        final_width = min(full_width, max_width)
+        final_height = min(full_height, max_height)
+
+        self.resize(final_width, final_height)
