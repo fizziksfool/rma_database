@@ -13,6 +13,13 @@ from PySide6.QtWidgets import (
 )
 
 from src.database import Customer, PartNumber, Product, User
+from src.gui.error_messages import (
+    add_customer_failed_message,
+    add_part_number_failed_message,
+    add_product_failed_message,
+    add_rma_failed_message,
+    add_user_failed_message,
+)
 from src.models import (
     SessionLocal,
     add_customer,
@@ -321,35 +328,3 @@ class AddCustomerWindow(QDialog):
             self.accept()
         else:
             add_customer_failed_message(self)
-
-
-def add_customer_failed_message(parent) -> None:
-    title = 'Error'
-    message = 'Failed to add customer. Invalid entry or customer already exists.'
-    QMessageBox.critical(parent, title, message)
-
-
-def add_part_number_failed_message(parent) -> None:
-    title = 'Error'
-    message = (
-        'Failed to add product number. Invalid entry or product number already exists.'
-    )
-    QMessageBox.critical(parent, title, message)
-
-
-def add_product_failed_message(parent) -> None:
-    title = 'Error'
-    message = 'Failed to add product and number. Invalid entry or product and number already exists.'
-    QMessageBox.critical(parent, title, message)
-
-
-def add_rma_failed_message(parent) -> None:
-    title = 'Error'
-    message = 'Failed to add new RMA.'
-    QMessageBox.critical(parent, title, message)
-
-
-def add_user_failed_message(parent) -> None:
-    title = 'Error'
-    message = 'Failed to add user. Invalid entry or user already exists.'
-    QMessageBox.critical(parent, title, message)
