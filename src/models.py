@@ -6,14 +6,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from src.database import (
-    DB_PATH,
     RMA,
     Customer,
     PartNumber,
     Product,
     SessionLocal,
     User,
-    initialize_database,
 )
 
 
@@ -232,9 +230,3 @@ def update_status(rma_number: str, new_status: str) -> bool:
         except IntegrityError:
             session.rollback()
             return False
-
-
-if __name__ == '__main__':
-    # Only run database initialization routine if it doesn't already exist.
-    if not DB_PATH.is_file():
-        initialize_database()
