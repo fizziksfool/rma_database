@@ -11,7 +11,7 @@ from PySide6.QtCore import (
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
-from src.database import (
+from .database import (
     RMA,
     Customer,
     PartNumber,

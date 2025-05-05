@@ -9,8 +9,8 @@ from PySide6.QtWidgets import (
 )
 from sqlalchemy.orm import joinedload
 
-from src.database import RMA, PartNumber, SessionLocal
-from src.models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
+from ..database import RMA, PartNumber, SessionLocal
+from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
 
 
 class ViewOpenRMAsWindow(QDialog):

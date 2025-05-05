@@ -13,14 +13,14 @@ from PySide6.QtWidgets import (
 )
 from qt_material import apply_stylesheet
 
-from src.gui.add_windows import (
+from .add_windows import (
     AddCustomerWindow,
     AddPartNumberWindow,
     AddProductWindow,
     AddRMAWindow,
     AddUserWindow,
 )
-from src.gui.view_open_rmas_window import ViewOpenRMAsWindow
+from .view_open_rmas_window import ViewOpenRMAsWindow
 
 
 class MainWindow(QMainWindow):
