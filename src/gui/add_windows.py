@@ -166,14 +166,13 @@ class AddProductWindow(QDialog):
 class AddRMAWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        generated_rma_number: str = self.generate_rma_number()
         self.part_numbers_by_product = defaultdict(list)
+        generated_rma_number: str = self.generate_rma_number()
         self.create_gui(generated_rma_number)
         self.load_combobox_data()
         self.update_part_numbers()
 
-    @staticmethod
-    def generate_rma_number() -> str:
+    def generate_rma_number(self) -> str:
         year_prefix = datetime.now().strftime('%y')
         base = int(year_prefix) * 1000
 
