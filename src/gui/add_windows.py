@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime
 
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
+from sqlalchemy import func
 
 from ..api import (
     add_customer,
@@ -18,8 +20,7 @@ from ..api import (
     add_rma,
     add_user,
 )
-from ..database import Customer, PartNumber, Product, SessionLocal, User
-from ..funcs import generate_rma_number
+from ..database import RMA, Customer, PartNumber, Product, SessionLocal, User
 from .error_messages import (
     add_customer_failed_message,
     add_part_number_failed_message,
@@ -165,11 +166,28 @@ class AddProductWindow(QDialog):
 class AddRMAWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        generated_rma_number: str = generate_rma_number()
+        generated_rma_number: str = self.generate_rma_number()
         self.part_numbers_by_product = defaultdict(list)
         self.create_gui(generated_rma_number)
         self.load_combobox_data()
         self.update_part_numbers()
+
+    @staticmethod
+    def generate_rma_number() -> str:
+        year_prefix = datetime.now().strftime('%y')
+        base = int(year_prefix) * 1000
+
+        with SessionLocal() as session:
+            latest = (
+                session.query(func.max(RMA.rma_number))
+                .filter(RMA.rma_number.like(f'{year_prefix}%'))
+                .scalar()
+            )
+
+            if latest:
+                return str(int(latest) + 1)
+            else:
+                return str(base + 1)
 
     def create_gui(self, generated_rma_number: str) -> None:
         self.setFixedSize(400, 500)
