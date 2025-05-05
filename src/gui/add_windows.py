@@ -11,15 +11,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from src.database import Customer, PartNumber, Product, User
-from src.gui.error_messages import (
-    add_customer_failed_message,
-    add_part_number_failed_message,
-    add_product_failed_message,
-    add_rma_failed_message,
-    add_user_failed_message,
-)
-from src.models import (
+from ..database import Customer, PartNumber, Product, User
+from ..models import (
     SessionLocal,
     add_customer,
     add_part_number,
@@ -27,6 +20,13 @@ from src.models import (
     add_rma,
     add_user,
     generate_rma_number,
+)
+from .error_messages import (
+    add_customer_failed_message,
+    add_part_number_failed_message,
+    add_product_failed_message,
+    add_rma_failed_message,
+    add_user_failed_message,
 )
 
 
