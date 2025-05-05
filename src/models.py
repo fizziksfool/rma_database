@@ -1,3 +1,4 @@
+from operator import attrgetter
 from typing import Any, Literal
 
 from PySide6.QtCore import (
@@ -43,6 +44,16 @@ class OpenRMAsTableModel(QAbstractTableModel):
             'Status',
         ]
 
+        self.accessors = [
+            attrgetter('rma_number'),
+            attrgetter('customer.name'),
+            attrgetter('part_number.product.name'),
+            attrgetter('part_number.number'),
+            attrgetter('reason_for_return'),
+            lambda rma: 'Yes' if rma.is_warranty else 'No',
+            attrgetter('status'),
+        ]
+
     def rowCount(self, parent=None) -> int:
         return len(self.rmas)
 
@@ -57,25 +68,14 @@ class OpenRMAsTableModel(QAbstractTableModel):
         if not index.isValid() or role != Qt.ItemDataRole.DisplayRole:
             return None
 
-        rma = self.rmas[index.row()]
-        col = index.column()
+        rma: RMA = self.rmas[index.row()]
+        col: int = index.column()
 
-        if col == 0:
-            return rma.rma_number
-        elif col == 1:
-            return rma.customer.name
-        elif col == 2:
-            return rma.part_number.product.name
-        elif col == 3:
-            return rma.part_number.number
-        elif col == 4:
-            return rma.reason_for_return
-        elif col == 5:
-            return 'Yes' if rma.is_warranty else 'No'
-        elif col == 6:
-            return rma.status
-
-        return None
+        try:
+            accessor = self.accessors[col]
+            return accessor(rma)
+        except (IndexError, AttributeError):
+            return None
 
     def headerData(
         self, section, orientation, role: int = Qt.ItemDataRole.DisplayRole

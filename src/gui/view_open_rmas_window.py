@@ -112,7 +112,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.proxy_model.setSourceModel(self.model)
         self.table_view.setModel(self.proxy_model)
         self.table_view.setSortingEnabled(True)
-        self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # RMA number ascending
+        self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # sort by ascending RMA#
 
         for col, header in enumerate(self.model.headers):
             if header == 'Reason For Return':
