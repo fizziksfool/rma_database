@@ -10,13 +10,15 @@ from PySide6.QtWidgets import (
 from sqlalchemy.orm import joinedload
 
 from ..database import RMA, PartNumber, SessionLocal
-from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
+from ..models import AllRMAsSortFilterProxyModel, AllRMAsTableModel
 
 
-class ViewOpenRMAsWindow(QDialog):
+class ViewAllRMAsWindow(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle('View Open RMAs')
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
+        self.setWindowTitle('View All RMAs')
         self.table_view = QTableView(self)
 
         self.filter_customer_label = QLabel('Filter by Customer:')
@@ -67,21 +69,20 @@ class ViewOpenRMAsWindow(QDialog):
 
     def load_data(self) -> None:
         with SessionLocal() as session:
-            open_rmas = (
+            all_rmas = (
                 session.query(RMA)
                 .options(
                     joinedload(RMA.part_number).joinedload(PartNumber.product),
                     joinedload(RMA.customer),
                     joinedload(RMA.issued_by),
                 )
-                .filter(RMA.status != 'Closed')
                 .all()
             )
 
-        products = sorted({rma.part_number.product.name for rma in open_rmas})
-        customers = sorted({rma.customer.name for rma in open_rmas})
-        warranties = sorted({'Yes' if rma.is_warranty else 'No' for rma in open_rmas})
-        statuses = sorted({rma.status for rma in open_rmas})
+        products = sorted({rma.part_number.product.name for rma in all_rmas})
+        customers = sorted({rma.customer.name for rma in all_rmas})
+        warranties = sorted({'Yes' if rma.is_warranty else 'No' for rma in all_rmas})
+        statuses = sorted({rma.status for rma in all_rmas})
 
         self.filter_customer_cbb.blockSignals(True)  # prevent premature filtering
         self.filter_customer_cbb.clear()
@@ -107,8 +108,8 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_status_cbb.addItems(statuses)
         self.filter_status_cbb.blockSignals(False)
 
-        self.model = OpenRMAsTableModel(open_rmas)
-        self.proxy_model = OpenRMAsSortFilterProxyModel()
+        self.model = AllRMAsTableModel(all_rmas)
+        self.proxy_model = AllRMAsSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.model)
         self.table_view.setModel(self.proxy_model)
         self.table_view.setSortingEnabled(True)
@@ -150,6 +151,7 @@ class ViewOpenRMAsWindow(QDialog):
             This adjustment is typically called after populating the table with data
             and calling resizeColumnsToContents().
         """
+        # Calculate width elements in window
         header = self.table_view.horizontalHeader()
         headers_width = sum(header.sectionSize(i) for i in range(header.count()))
         index_width = self.table_view.verticalHeader().width()
@@ -159,6 +161,9 @@ class ViewOpenRMAsWindow(QDialog):
         )
         horizontal_padding = 20
 
+        full_width = index_width + headers_width + scrollbar_width + horizontal_padding
+
+        # Calculate height of elements in window
         row_count = self.table_view.model().rowCount()
         row_height = self.table_view.verticalHeader().defaultSectionSize()
         header_height = header.height()
@@ -168,16 +173,14 @@ class ViewOpenRMAsWindow(QDialog):
         filters_height = (
             filter_customer_height + filter_product_height + filter_label_height + 10
         )  # +spacing
-
         vertical_padding = 60  # Additional padding for margins, layout spacing, etc.
 
         full_height = (
             filters_height + (row_height * row_count) + header_height + vertical_padding
         )
-        full_width = index_width + headers_width + scrollbar_width + horizontal_padding
 
-        max_width = 1920
-        max_height = 1080
+        max_width = 1800
+        max_height = 1000
 
         final_width = min(full_width, max_width)
         final_height = min(full_height, max_height)

@@ -20,6 +20,7 @@ from .add_windows import (
     AddRMAWindow,
     AddUserWindow,
 )
+from .view_all_rmas_window import ViewAllRMAsWindow
 from .view_open_rmas_window import ViewOpenRMAsWindow
 
 
@@ -58,6 +59,10 @@ class MainWindow(QMainWindow):
     def _handle_view_open_rmas_button(self) -> None:
         view_open_rmas_window = ViewOpenRMAsWindow(self)
         view_open_rmas_window.exec()
+
+    def _handle_view_all_rmas_button(self) -> None:
+        view_all_rmas_window = ViewAllRMAsWindow(self)
+        view_all_rmas_window.exec()
 
     def _handle_add_new_rma_button(self) -> None:
         add_new_rma_window = AddRMAWindow(self)
@@ -120,18 +125,19 @@ class MainWindow(QMainWindow):
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')
         self.add_new_rma_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.open_rma_form_button = QPushButton('Open RMA Form')
-        self.open_rma_form_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.view_open_rmas_button = QPushButton('View Open RMAs')
         self.view_open_rmas_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.view_all_rmas_button = QPushButton('View All RMAs')
+        self.view_all_rmas_button.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.add_new_rma_button.clicked.connect(self._handle_add_new_rma_button)
         self.view_open_rmas_button.clicked.connect(self._handle_view_open_rmas_button)
+        self.view_all_rmas_button.clicked.connect(self._handle_view_all_rmas_button)
 
         v_button_layout = QVBoxLayout()
         v_button_layout.addWidget(self.add_new_rma_button)
-        v_button_layout.addWidget(self.open_rma_form_button)
         v_button_layout.addWidget(self.view_open_rmas_button)
+        v_button_layout.addWidget(self.view_all_rmas_button)
 
         main_layout = QHBoxLayout()
         main_layout.addLayout(v_button_layout)
