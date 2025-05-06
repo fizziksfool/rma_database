@@ -98,7 +98,7 @@ class OpenRMAsTableModel(QAbstractTableModel):
         section: int,
         orientation: Qt.Orientation,
         role: int = Qt.ItemDataRole.DisplayRole,
-    ) -> None | list[str] | str:
+    ) -> None | str:
         if role != Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == Qt.Orientation.Horizontal:
