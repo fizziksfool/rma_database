@@ -20,8 +20,8 @@ from .add_windows import (
     AddRMAWindow,
     AddUserWindow,
 )
-from .view_all_rmas_window import ViewAllRMAsWindow
 from .view_open_rmas_window import ViewOpenRMAsWindow
+from .view_rma_table_window import ViewRMATable
 
 
 class MainWindow(QMainWindow):
@@ -60,9 +60,9 @@ class MainWindow(QMainWindow):
         view_open_rmas_window = ViewOpenRMAsWindow(self)
         view_open_rmas_window.exec()
 
-    def _handle_view_all_rmas_button(self) -> None:
-        view_all_rmas_window = ViewAllRMAsWindow(self)
-        view_all_rmas_window.exec()
+    def _handle_view_rma_table_button(self) -> None:
+        view_rma_table_window = ViewRMATable(self)
+        view_rma_table_window.exec()
 
     def _handle_add_new_rma_button(self) -> None:
         add_new_rma_window = AddRMAWindow(self)
@@ -127,12 +127,12 @@ class MainWindow(QMainWindow):
         self.add_new_rma_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.view_open_rmas_button = QPushButton('View Open RMAs')
         self.view_open_rmas_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.view_all_rmas_button = QPushButton('View All RMAs')
+        self.view_all_rmas_button = QPushButton('View RMA Table')
         self.view_all_rmas_button.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.add_new_rma_button.clicked.connect(self._handle_add_new_rma_button)
         self.view_open_rmas_button.clicked.connect(self._handle_view_open_rmas_button)
-        self.view_all_rmas_button.clicked.connect(self._handle_view_all_rmas_button)
+        self.view_all_rmas_button.clicked.connect(self._handle_view_rma_table_button)
 
         v_button_layout = QVBoxLayout()
         v_button_layout.addWidget(self.add_new_rma_button)

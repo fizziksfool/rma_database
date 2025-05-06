@@ -13,12 +13,12 @@ from ..database import RMA, PartNumber, SessionLocal
 from ..models import AllRMAsSortFilterProxyModel, AllRMAsTableModel
 
 
-class ViewAllRMAsWindow(QDialog):
+class ViewRMATable(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
-        self.setWindowTitle('View All RMAs')
+        self.setWindowTitle('RMA Table')
         self.table_view = QTableView(self)
 
         self.filter_customer_label = QLabel('Filter by Customer:')
