@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from operator import attrgetter
 from typing import Any, Literal
 
@@ -10,6 +11,26 @@ from PySide6.QtCore import (
 )
 
 from .database import RMA
+
+RMA_ATTR_ACCESSORS: dict[str, Callable[[RMA], Any]] = {
+    # header text: RMA table attribute
+    'RMA #': attrgetter('rma_number'),
+    'Issued By': attrgetter('issued_by.name'),
+    'Customer': attrgetter('customer.name'),
+    'Product': attrgetter('part_number.product.name'),
+    'Part #': attrgetter('part_number.number'),
+    'Serial #': attrgetter('serial_number'),
+    'Warranty': lambda rma: 'Yes' if rma.is_warranty else 'No',
+    'Reason for Return': attrgetter('reason_for_return'),
+    'Status': attrgetter('status'),
+    'Date Issued': attrgetter('issued_on'),
+    'Last Updated': attrgetter('last_updated'),
+    'Cust. PO #': attrgetter('customer_po_number'),
+    'WO #': attrgetter('work_order'),
+    'Inspection Notes': attrgetter('incoming_inspection_notes'),
+    'Resolution': attrgetter('resolution_notes'),
+    'Date Returned': attrgetter('shipped_back_on'),
+}
 
 
 class OpenRMAsTableModel(QAbstractTableModel):
@@ -34,26 +55,19 @@ class OpenRMAsTableModel(QAbstractTableModel):
     def __init__(self, rmas: list[RMA], parent=None) -> None:
         super().__init__(parent)
         self.rmas = rmas
-        self.headers = [
+        self.headers: list[str] = [
             'RMA #',
             'Customer',
             'Product',
             'Part #',
             'Serial #',
-            'Reason For Return',
+            'Reason for Return',
             'Warranty',
             'Status',
         ]
 
-        self.accessors = [
-            attrgetter('rma_number'),
-            attrgetter('customer.name'),
-            attrgetter('part_number.product.name'),
-            attrgetter('part_number.number'),
-            attrgetter('serial_number'),
-            attrgetter('reason_for_return'),
-            lambda rma: 'Yes' if rma.is_warranty else 'No',
-            attrgetter('status'),
+        self.accessors: list[Callable] = [
+            RMA_ATTR_ACCESSORS[header] for header in self.headers
         ]
 
     def rowCount(self, parent=None) -> int:
@@ -66,7 +80,7 @@ class OpenRMAsTableModel(QAbstractTableModel):
         self,
         index: QModelIndex | QPersistentModelIndex,
         role: int = Qt.ItemDataRole.DisplayRole,
-    ) -> None | Any | Literal['Yes'] | Literal['No']:
+    ) -> None | Any | Literal['Yes', 'No']:
         if not index.isValid() or role != Qt.ItemDataRole.DisplayRole:
             return None
 

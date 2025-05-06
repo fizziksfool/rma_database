@@ -72,9 +72,9 @@ class ViewOpenRMAsWindow(QDialog):
                 .options(
                     joinedload(RMA.part_number).joinedload(PartNumber.product),
                     joinedload(RMA.customer),
+                    joinedload(RMA.issued_by),
                 )
                 .filter(RMA.status != 'Closed')
-                .order_by(RMA.rma_number)
                 .all()
             )
 
@@ -115,7 +115,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # sort by ascending RMA#
 
         for col, header in enumerate(self.model.headers):
-            if header == 'Reason For Return':
+            if header == 'Reason for Return':
                 self.table_view.setColumnWidth(col, 200)
             else:
                 self.table_view.setColumnWidth(col, 130)
