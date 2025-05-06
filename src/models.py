@@ -13,23 +13,22 @@ from PySide6.QtCore import (
 from .database import RMA
 
 RMA_ATTR_ACCESSORS: dict[str, Callable[[RMA], Any]] = {
-    # header text: RMA table attribute
-    'RMA #': attrgetter('rma_number'),
-    'Issued By': attrgetter('issued_by.name'),
-    'Customer': attrgetter('customer.name'),
-    'Product': attrgetter('part_number.product.name'),
-    'Part #': attrgetter('part_number.number'),
-    'Serial #': attrgetter('serial_number'),
-    'Warranty': lambda rma: 'Yes' if rma.is_warranty else 'No',
-    'Reason for Return': attrgetter('reason_for_return'),
-    'Status': attrgetter('status'),
-    'Date Issued': attrgetter('issued_on'),
-    'Last Updated': attrgetter('last_updated'),
     'Cust. PO #': attrgetter('customer_po_number'),
-    'WO #': attrgetter('work_order'),
-    'Inspection Notes': attrgetter('incoming_inspection_notes'),
-    'Resolution': attrgetter('resolution_notes'),
+    'Customer': attrgetter('customer.name'),
+    'Date Issued': attrgetter('issued_on'),
     'Date Returned': attrgetter('shipped_back_on'),
+    'Inspection Notes': attrgetter('incoming_inspection_notes'),
+    'Issued By': attrgetter('issued_by.name'),
+    'Last Updated': attrgetter('last_updated'),
+    'Part #': attrgetter('part_number.number'),
+    'Product': attrgetter('part_number.product.name'),
+    'Reason for Return': attrgetter('reason_for_return'),
+    'Resolution': attrgetter('resolution_notes'),
+    'RMA #': attrgetter('rma_number'),
+    'Serial #': attrgetter('serial_number'),
+    'Status': attrgetter('status'),
+    'Warranty': lambda rma: 'Yes' if rma.is_warranty else 'No',
+    'WO #': attrgetter('work_order'),
 }
 
 
@@ -187,13 +186,13 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
 
         # Warranty filter (column 5)
         if self.warranty_filter:
-            warranty_index = model.index(source_row, 5, source_parent)
+            warranty_index = model.index(source_row, 6, source_parent)
             if warranty_index.data() != self.warranty_filter:
                 return False
 
             # Status filter (column 6)
             if self.status_filter:
-                status_index = model.index(source_row, 6, source_parent)
+                status_index = model.index(source_row, 7, source_parent)
                 if status_index.data() != self.status_filter:
                     return False
 
