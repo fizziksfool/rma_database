@@ -94,7 +94,10 @@ class OpenRMAsTableModel(QAbstractTableModel):
             return None
 
     def headerData(
-        self, section, orientation, role: int = Qt.ItemDataRole.DisplayRole
+        self,
+        section: int,
+        orientation: Qt.Orientation,
+        role: int = Qt.ItemDataRole.DisplayRole,
     ) -> None | list[str] | str:
         if role != Qt.ItemDataRole.DisplayRole:
             return None
@@ -165,7 +168,9 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
             self.status_filter = status
         self.invalidateFilter()
 
-    def filterAcceptsRow(self, source_row: int, source_parent) -> bool:
+    def filterAcceptsRow(
+        self, source_row: int, source_parent: QModelIndex | QPersistentModelIndex
+    ) -> bool:
         model = self.sourceModel()
 
         # Customer filter (column 1)
