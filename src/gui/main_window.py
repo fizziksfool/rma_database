@@ -146,6 +146,7 @@ class MainWindow(QMainWindow):
 
         v_button_layout = QVBoxLayout()
         v_button_layout.addWidget(self.add_new_rma_button)
+        v_button_layout.addWidget(self.view_rma_records_button)
         v_button_layout.addWidget(self.view_open_rmas_button)
         v_button_layout.addWidget(self.view_all_rmas_button)
 
