@@ -148,7 +148,7 @@ class ViewOpenRMAsWindow(QDialog):
 
         Note:
             This adjustment is typically called after populating the table with data
-            and calling resizeColumnsToContents().
+            and calling self.adjust_column_widths().
         """
         header = self.table_view.horizontalHeader()
         headers_width = sum(header.sectionSize(i) for i in range(header.count()))

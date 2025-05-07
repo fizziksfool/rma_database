@@ -149,7 +149,7 @@ class ViewRMATable(QDialog):
 
         Note:
             This adjustment is typically called after populating the table with data
-            and calling resizeColumnsToContents().
+            and calling self.adjust_column_size().
         """
         # Calculate width elements in window
         header = self.table_view.horizontalHeader()
