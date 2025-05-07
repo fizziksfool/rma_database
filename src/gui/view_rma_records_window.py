@@ -115,36 +115,31 @@ class ViewRMARecordsWindow(QDialog):
 
         grid_layout.addWidget(self.customer_po_num_label, 0, 3)
         grid_layout.addWidget(self.work_order_label, 1, 3)
-        grid_layout.addWidget(self.inspection_notes_label, 2, 3)
-        grid_layout.addWidget(self.resolution_label, 5, 3)
+        grid_layout.addWidget(
+            self.inspection_notes_label, 2, 3, Qt.AlignmentFlag.AlignTop
+        )
+        grid_layout.addWidget(self.resolution_label, 5, 3, Qt.AlignmentFlag.AlignTop)
         grid_layout.addWidget(self.last_updated_label, 7, 3)
         grid_layout.addWidget(self.shipped_back_date_label, 8, 3)
 
         grid_layout.addWidget(self.customer_po_num_input, 0, 4)
         grid_layout.addWidget(self.work_order_input, 1, 4)
-        grid_layout.addWidget(
-            self.inspection_notes_text, 2, 4, 3, 1, Qt.AlignmentFlag.AlignBottom
-        )
-        grid_layout.addWidget(
-            self.resolution_input, 5, 4, 2, 1, Qt.AlignmentFlag.AlignBottom
-        )
+        grid_layout.addWidget(self.inspection_notes_text, 2, 4, 3, 1)
+        grid_layout.addWidget(self.resolution_input, 5, 4, 2, 1)
         grid_layout.addWidget(self.last_updated_display, 7, 4)
         grid_layout.addWidget(self.shipped_back_date_input, 8, 4)
 
-        sub1_bottom_layout = QHBoxLayout()
-        sub1_bottom_layout.addWidget(self.save_button)
-
-        sub2_bottom_layout = QHBoxLayout()
-        sub2_bottom_layout.addWidget(self.go_to_first)
-        sub2_bottom_layout.addWidget(self.prev_button)
-        sub2_bottom_layout.addWidget(self.next_button)
-        sub2_bottom_layout.addWidget(self.go_to_last)
+        nav_buttons_layout = QHBoxLayout()
+        nav_buttons_layout.addWidget(self.go_to_first)
+        nav_buttons_layout.addWidget(self.prev_button)
+        nav_buttons_layout.addWidget(self.next_button)
+        nav_buttons_layout.addWidget(self.go_to_last)
 
         bottom_layout = QVBoxLayout()
         bottom_layout.addWidget(QLabel())  # empty widget for spacing
-        bottom_layout.addLayout(sub1_bottom_layout)
+        bottom_layout.addWidget(self.save_button)
         bottom_layout.addWidget(QLabel())  # emtpy widget for spacing
-        bottom_layout.addLayout(sub2_bottom_layout)
+        bottom_layout.addLayout(nav_buttons_layout)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(top_layout)
