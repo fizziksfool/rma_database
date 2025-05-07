@@ -1,7 +1,8 @@
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtWidgets import (
+    QCalendarWidget,
     QCheckBox,
     QComboBox,
-    QDateEdit,
     QDialog,
     QGridLayout,
     QHBoxLayout,
@@ -28,8 +29,6 @@ class ViewRMARecordsWindow(QDialog):
         self.setFixedSize(window_width, window_height)
 
     def create_gui(self) -> None:
-        TEXT_BOX_HEIGHT = 36
-
         self.rma_num_label = QLabel('RMA Record #')
         self.rma_num_display = QLabel('#####')
         self.rma_num_display.setStyleSheet('color: lightgreen;')
@@ -49,7 +48,7 @@ class ViewRMARecordsWindow(QDialog):
         self.serial_num_display.setStyleSheet('color: lightgreen;')
         self.reason_for_return_label = QLabel('Reason for Return')
         self.reason_for_return_text = QTextEdit()
-        self.reason_for_return_text.setFixedHeight(TEXT_BOX_HEIGHT)
+        self.reason_for_return_text.setFixedHeight(36)
         self.date_issued_label = QLabel('Date Issued')
         self.date_issued_display = QLabel()
         self.date_issued_display.setStyleSheet('color: lightgreen;')
@@ -63,16 +62,15 @@ class ViewRMARecordsWindow(QDialog):
         self.status_ccb.setStyleSheet('color: lightgreen;')
         self.inspection_notes_label = QLabel('Inspection Notes')
         self.inspection_notes_text = QTextEdit()
-        self.inspection_notes_text.setFixedHeight(TEXT_BOX_HEIGHT)
         self.customer_po_num_label = QLabel('Cust. PO #')
         self.customer_po_num_input = QLineEdit()
         self.work_order_label = QLabel('WO #')
         self.work_order_input = QLineEdit()
         self.resolution_label = QLabel('Resolution')
         self.resolution_input = QTextEdit()
-        self.resolution_input.setFixedHeight(TEXT_BOX_HEIGHT)
         self.shipped_back_date_label = QLabel('Shipped Back On')
-        self.shipped_back_date_input = QLineEdit()
+        self.shipped_back_date_input = DateLineEdit()
+        self.shipped_back_date_input.setPlaceholderText('Select a date...')
         self.shipped_back_date_input.setStyleSheet('color: lightgreen;')
         self.issued_by_label = QLabel('Issued By')
         self.issued_by_display = QLabel()
@@ -101,6 +99,7 @@ class ViewRMARecordsWindow(QDialog):
         grid_layout.addWidget(self.date_issued_label, 5, 0)
         grid_layout.addWidget(self.issued_by_label, 6, 0)
         grid_layout.addWidget(self.warranty_label, 7, 0)
+        grid_layout.addWidget(self.status_label, 8, 0)
 
         grid_layout.addWidget(self.customer_display, 0, 1)
         grid_layout.addWidget(self.part_num_display, 1, 1)
@@ -110,24 +109,27 @@ class ViewRMARecordsWindow(QDialog):
         grid_layout.addWidget(self.date_issued_display, 5, 1)
         grid_layout.addWidget(self.issued_by_display, 6, 1)
         grid_layout.addWidget(self.warranty_cb, 7, 1)
+        grid_layout.addWidget(self.status_ccb, 8, 1)
 
         grid_layout.addWidget(QLabel('      '), 0, 2)  # empty widget for spacing
 
-        grid_layout.addWidget(self.status_label, 0, 3)
-        grid_layout.addWidget(self.customer_po_num_label, 1, 3)
-        grid_layout.addWidget(self.work_order_label, 2, 3)
-        grid_layout.addWidget(self.inspection_notes_label, 3, 3)
-        grid_layout.addWidget(self.resolution_label, 4, 3)
-        grid_layout.addWidget(self.last_updated_label, 5, 3)
-        grid_layout.addWidget(self.shipped_back_date_label, 6, 3)
+        grid_layout.addWidget(self.customer_po_num_label, 0, 3)
+        grid_layout.addWidget(self.work_order_label, 1, 3)
+        grid_layout.addWidget(self.inspection_notes_label, 2, 3)
+        grid_layout.addWidget(self.resolution_label, 5, 3)
+        grid_layout.addWidget(self.last_updated_label, 7, 3)
+        grid_layout.addWidget(self.shipped_back_date_label, 8, 3)
 
-        grid_layout.addWidget(self.status_ccb, 0, 4)
-        grid_layout.addWidget(self.customer_po_num_input, 1, 4)
-        grid_layout.addWidget(self.work_order_input, 2, 4)
-        grid_layout.addWidget(self.inspection_notes_text, 3, 4)
-        grid_layout.addWidget(self.resolution_input, 4, 4)
-        grid_layout.addWidget(self.last_updated_display, 5, 4)
-        grid_layout.addWidget(self.shipped_back_date_input, 6, 4)
+        grid_layout.addWidget(self.customer_po_num_input, 0, 4)
+        grid_layout.addWidget(self.work_order_input, 1, 4)
+        grid_layout.addWidget(
+            self.inspection_notes_text, 2, 4, 3, 1, Qt.AlignmentFlag.AlignBottom
+        )
+        grid_layout.addWidget(
+            self.resolution_input, 5, 4, 2, 1, Qt.AlignmentFlag.AlignBottom
+        )
+        grid_layout.addWidget(self.last_updated_display, 7, 4)
+        grid_layout.addWidget(self.shipped_back_date_input, 8, 4)
 
         sub1_bottom_layout = QHBoxLayout()
         sub1_bottom_layout.addWidget(self.save_button)
@@ -150,3 +152,30 @@ class ViewRMARecordsWindow(QDialog):
         main_layout.addLayout(bottom_layout)
 
         self.setLayout(main_layout)
+
+
+class CalendarPopup(QCalendarWidget):
+    def __init__(self, parent=None, line_edit=None) -> None:
+        super().__init__(parent)
+        self.line_edit = line_edit
+        self.setWindowFlags(Qt.WindowType.Popup)
+        self.clicked.connect(self.on_date_selected)
+
+    def on_date_selected(self, date: QDate) -> None:
+        if self.line_edit:
+            self.line_edit.setText(date.toString('yyyy-MM-dd'))
+        self.hide()
+
+
+class DateLineEdit(QLineEdit):
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.calendar_popup = CalendarPopup(self, self)
+
+    def mousePressEvent(self, event) -> None:
+        if not self.calendar_popup.isVisible():
+            self.show_calendar()
+
+    def show_calendar(self):
+        self.calendar_popup.move(self.mapToGlobal(self.rect().bottomLeft()))
+        self.calendar_popup.show()
