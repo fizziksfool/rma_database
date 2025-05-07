@@ -80,10 +80,10 @@ class ViewRMARecordsWindow(QDialog):
         self.last_updated_label = QLabel('Last Updated')
         self.last_updated_display = QLabel()
         self.last_updated_display.setStyleSheet('color: lightgreen;')
-        self.prev_button = QPushButton('\u23ea')  # '⏪︎'
-        self.next_button = QPushButton('\u23e9')  # '⏩︎'
-        self.go_to_first = QPushButton('\u23ee')  # '⏮︎'
-        self.go_to_last = QPushButton('\u23ed')  # '⏭︎'
+        self.prev_button = QPushButton('\u23ea')  # ⏪︎, \u23ea
+        self.next_button = QPushButton('\u23e9')  # ⏩︎, \u23e9
+        self.go_to_first = QPushButton('\u23ee')  # ⏮︎, \u23ee
+        self.go_to_last = QPushButton('\u23ed')  # ⏭︎, \u23ed
         self.save_button = QPushButton('Save')
 
         top_layout = QHBoxLayout()
@@ -111,7 +111,7 @@ class ViewRMARecordsWindow(QDialog):
         grid_layout.addWidget(self.issued_by_display, 6, 1)
         grid_layout.addWidget(self.warranty_cb, 7, 1)
 
-        grid_layout.addWidget(QLabel('      '), 0, 2)
+        grid_layout.addWidget(QLabel('      '), 0, 2)  # empty widget for spacing
 
         grid_layout.addWidget(self.status_label, 0, 3)
         grid_layout.addWidget(self.customer_po_num_label, 1, 3)
@@ -139,9 +139,9 @@ class ViewRMARecordsWindow(QDialog):
         sub2_bottom_layout.addWidget(self.go_to_last)
 
         bottom_layout = QVBoxLayout()
-        bottom_layout.addWidget(QLabel())
+        bottom_layout.addWidget(QLabel())  # empty widget for spacing
         bottom_layout.addLayout(sub1_bottom_layout)
-        bottom_layout.addWidget(QLabel())
+        bottom_layout.addWidget(QLabel())  # emtpy widget for spacing
         bottom_layout.addLayout(sub2_bottom_layout)
 
         main_layout = QVBoxLayout()
