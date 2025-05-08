@@ -1,3 +1,8 @@
+from collections.abc import Callable
+from datetime import datetime
+from operator import attrgetter
+from typing import Any
+
 from sqlalchemy import desc, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -10,6 +15,26 @@ from .database import (
     SessionLocal,
     User,
 )
+
+RMA_ATTR_ACCESSORS: dict[str, Callable[[RMA], Any]] = {
+    'Cust. PO #': attrgetter('customer_po_number'),
+    'Customer': attrgetter('customer.name'),
+    'Date Issued': attrgetter('issued_on'),
+    'Date Returned': attrgetter('shipped_back_on'),
+    'Inspection Notes': attrgetter('incoming_inspection_notes'),
+    'Issued By': attrgetter('issued_by.name'),
+    'Last Updated': attrgetter('last_updated'),
+    'Part #': attrgetter('part_number.number'),
+    'Product': attrgetter('part_number.product.name'),
+    'Reason for Return': attrgetter('reason_for_return'),
+    'Resolution': attrgetter('resolution_notes'),
+    'RMA #': attrgetter('rma_number'),
+    'Serial #': attrgetter('serial_number'),
+    'Status': attrgetter('status'),
+    'Warranty_yn': lambda rma: 'Yes' if rma.is_warranty else 'No',
+    'Warranty_io': attrgetter('is_warranty'),
+    'WO #': attrgetter('work_order'),
+}
 
 
 def add_customer(customer_name: str) -> bool:
@@ -199,3 +224,26 @@ def get_rma_by_sn(serial_num: str) -> RMA | None:
             .filter_by(serial_number=serial_num)
             .first()
         )
+
+
+def overwrite_rma_record(rma_number: str, entries: list[str | bool | datetime]) -> bool:
+    with SessionLocal() as session:
+        rma = session.query(RMA).filter_by(rma_number=rma_number).first()
+
+        if not rma:
+            return False
+
+        entries_to_overwrite = [
+            rma.reason_for_return,
+            rma.is_warranty,
+            rma.status,
+            rma.customer_po_number,
+            rma.work_order,
+            rma.incoming_inspection_notes,
+            rma.resolution_notes,
+            rma.shipped_back_on,
+        ]
+
+        # Need to add in the rest of the function here. zip together entries_to_overwrite and entries?
+
+        return True

@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from operator import attrgetter
 from typing import Any
 
 from PySide6.QtCore import (
@@ -10,26 +9,8 @@ from PySide6.QtCore import (
     Qt,
 )
 
+from .api import RMA_ATTR_ACCESSORS
 from .database import RMA
-
-RMA_ATTR_ACCESSORS: dict[str, Callable[[RMA], Any]] = {
-    'Cust. PO #': attrgetter('customer_po_number'),
-    'Customer': attrgetter('customer.name'),
-    'Date Issued': attrgetter('issued_on'),
-    'Date Returned': attrgetter('shipped_back_on'),
-    'Inspection Notes': attrgetter('incoming_inspection_notes'),
-    'Issued By': attrgetter('issued_by.name'),
-    'Last Updated': attrgetter('last_updated'),
-    'Part #': attrgetter('part_number.number'),
-    'Product': attrgetter('part_number.product.name'),
-    'Reason for Return': attrgetter('reason_for_return'),
-    'Resolution': attrgetter('resolution_notes'),
-    'RMA #': attrgetter('rma_number'),
-    'Serial #': attrgetter('serial_number'),
-    'Status': attrgetter('status'),
-    'Warranty': lambda rma: 'Yes' if rma.is_warranty else 'No',
-    'WO #': attrgetter('work_order'),
-}
 
 
 class AllRMAsTableModel(QAbstractTableModel):
@@ -43,7 +24,7 @@ class AllRMAsTableModel(QAbstractTableModel):
             'Part #',
             'Serial #',
             'Reason for Return',
-            'Warranty',
+            'Warranty_yn',
             'Status',
             'Date Issued',
             'Cust. PO #',
@@ -193,7 +174,7 @@ class OpenRMAsTableModel(QAbstractTableModel):
             'Part #',
             'Serial #',
             'Reason for Return',
-            'Warranty',
+            'Warranty_yn',
             'Status',
         ]
 
