@@ -39,8 +39,9 @@ class ViewRMARecordsWindow(QDialog):
 
     def create_gui(self) -> None:
         self.rma_num_label = QLabel('RMA Record #')
+        self.rma_num_label.setStyleSheet('font-size: 20pt;')
         self.rma_num_display = QLabel()
-        self.rma_num_display.setStyleSheet('color: lightgreen;')
+        self.rma_num_display.setStyleSheet('color: lightgreen; font-size: 20pt;')
         self.search_by_serial_num = QPushButton('Search by S/N')
         self.search_by_rma_num = QPushButton('Search by RMA #')
         self.customer_label = QLabel('Customer')
@@ -95,14 +96,14 @@ class ViewRMARecordsWindow(QDialog):
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.rma_num_label)
-        top_layout.addWidget(self.rma_num_display)
+        top_layout.addWidget(self.rma_num_display, Qt.AlignmentFlag.AlignLeft)
         top_layout.addWidget(self.search_by_serial_num)
         top_layout.addWidget(self.search_by_rma_num)
 
         grid_layout = QGridLayout()
         grid_layout.addWidget(self.customer_label, 0, 0)
         grid_layout.addWidget(self.part_num_label, 1, 0)
-        grid_layout.addWidget(self.product_label, 2, 0)
+        grid_layout.addWidget(self.product_label, 2, 0, Qt.AlignmentFlag.AlignTop)
         grid_layout.addWidget(self.serial_num_label, 3, 0)
         grid_layout.addWidget(self.reason_for_return_label, 4, 0)
         grid_layout.addWidget(self.date_issued_label, 5, 0)
