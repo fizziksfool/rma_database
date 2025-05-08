@@ -13,6 +13,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from ..api import get_newest_rma_num, get_rma_by_rma_num
+from ..database import RMA
+
 
 class ViewRMARecordsWindow(QDialog):
     def __init__(self, parent=None) -> None:
@@ -20,6 +23,12 @@ class ViewRMARecordsWindow(QDialog):
         self.setWindowTitle('RMA Records')
         self.set_window_size()
         self.create_gui()
+        rma: RMA | None = None
+        newest_rma: str | None = get_newest_rma_num()
+        if newest_rma is not None:
+            rma = get_rma_by_rma_num(newest_rma)
+        if rma is not None:
+            self.load_rma(rma)
 
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
@@ -30,7 +39,7 @@ class ViewRMARecordsWindow(QDialog):
 
     def create_gui(self) -> None:
         self.rma_num_label = QLabel('RMA Record #')
-        self.rma_num_display = QLabel('#####')
+        self.rma_num_display = QLabel()
         self.rma_num_display.setStyleSheet('color: lightgreen;')
         self.search_by_serial_num = QPushButton('Search by S/N')
         self.search_by_rma_num = QPushButton('Search by RMA #')
@@ -147,6 +156,24 @@ class ViewRMARecordsWindow(QDialog):
         main_layout.addLayout(bottom_layout)
 
         self.setLayout(main_layout)
+
+    def load_rma(self, rma: RMA) -> None:
+        self.rma_num_display.setText(rma.rma_number)
+        self.customer_display.setText(rma.customer.name)
+        self.part_num_display.setText(rma.part_number.number)
+        self.product_display.setText(rma.part_number.product.name)
+        self.serial_num_display.setText(rma.serial_number)
+        self.reason_for_return_text.setPlainText(rma.reason_for_return)
+        self.date_issued_display.setText(str(rma.issued_on))
+        self.warranty_cb.setChecked(rma.is_warranty)
+        self.status_ccb.setCurrentText(rma.status)
+        self.customer_po_num_input.setText(rma.customer_po_number)
+        self.work_order_input.setText(rma.work_order)
+        self.inspection_notes_text.setPlainText(rma.incoming_inspection_notes)
+        self.resolution_input.setPlainText(rma.resolution_notes)
+        self.last_updated_display.setText(str(rma.last_updated))
+        if rma.shipped_back_on:
+            self.shipped_back_date_input.setText(str(rma.shipped_back_on))
 
 
 class CalendarPopup(QCalendarWidget):
