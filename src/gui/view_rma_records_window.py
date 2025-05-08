@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PySide6.QtCore import QDate, Qt
 from PySide6.QtWidgets import (
     QCalendarWidget,
@@ -13,7 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ..api import get_newest_rma_num, get_rma_by_rma_num
+from ..api import get_newest_rma_num, get_rma_by_rma_num, overwrite_rma_record
 from ..database import RMA
 
 
@@ -180,6 +182,20 @@ class ViewRMARecordsWindow(QDialog):
             )
         if rma.status == 'Closed':
             self.shipped_back_date_input.setEnabled(False)
+
+    def save_changes(self, rma_number: str) -> None:
+        entries: list[str | datetime | bool] = [
+            self.reason_for_return_text.toPlainText(),
+            self.warranty_cb.isChecked(),
+            self.status_ccb.currentText(),
+            self.customer_po_num_input.text(),
+            self.work_order_input.text(),
+            self.inspection_notes_text.toPlainText(),
+            self.resolution_input.toPlainText(),
+            datetime.strptime(self.shipped_back_date_input.text(), '%Y-%m-%d'),
+        ]
+
+        overwrite_rma_record(rma_number, entries)
 
 
 class CalendarPopup(QCalendarWidget):
