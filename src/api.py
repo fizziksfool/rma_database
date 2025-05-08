@@ -1,4 +1,6 @@
+from sqlalchemy import desc, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from .database import (
     RMA,
@@ -162,3 +164,38 @@ def update_status(rma_number: str, new_status: str) -> bool:
         except IntegrityError:
             session.rollback()
             return False
+
+
+def get_newest_rma_num() -> str | None:
+    with SessionLocal() as session:
+        return session.execute(
+            select(RMA.rma_number).order_by(desc(RMA.issued_on)).limit(1)
+        ).scalar_one_or_none()
+
+
+def get_rma_by_rma_num(rma_number: str) -> RMA | None:
+    with SessionLocal() as session:
+        return (
+            session.query(RMA)
+            .options(
+                joinedload(RMA.part_number).joinedload(PartNumber.product),
+                joinedload(RMA.customer),
+                joinedload(RMA.issued_by),
+            )
+            .filter_by(rma_number=rma_number)
+            .first()
+        )
+
+
+def get_rma_by_sn(serial_num: str) -> RMA | None:
+    with SessionLocal() as session:
+        return (
+            session.query(RMA)
+            .options(
+                joinedload(RMA.part_number).joinedload(PartNumber.product),
+                joinedload(RMA.customer),
+                joinedload(RMA.issued_by),
+            )
+            .filter_by(serial_number=serial_num)
+            .first()
+        )
