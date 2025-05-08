@@ -56,7 +56,7 @@ class ViewRMARecordsWindow(QDialog):
         self.serial_num_label = QLabel('Serial Number')
         self.serial_num_display = QLabel()
         self.serial_num_display.setStyleSheet('color: lightgreen;')
-        self.reason_for_return_label = QLabel('Reason for Return')
+        self.reason_for_return_label = QLabel('Returned For')
         self.reason_for_return_text = QTextEdit()
         self.reason_for_return_text.setFixedHeight(36)
         self.date_issued_label = QLabel('Date Issued')
@@ -160,21 +160,27 @@ class ViewRMARecordsWindow(QDialog):
 
     def load_rma(self, rma: RMA) -> None:
         self.rma_num_display.setText(rma.rma_number)
-        self.customer_display.setText(rma.customer.name)
+        self.customer_display.setText(rma.customer.name.upper())
         self.part_num_display.setText(rma.part_number.number)
-        self.product_display.setText(rma.part_number.product.name)
+        self.product_display.setText(rma.part_number.product.name.upper())
         self.serial_num_display.setText(rma.serial_number)
         self.reason_for_return_text.setPlainText(rma.reason_for_return)
-        self.date_issued_display.setText(str(rma.issued_on))
+        self.date_issued_display.setText(rma.issued_on.strftime('%Y-%m-%d'))
+        self.issued_by_display.setText(rma.issued_by.name.upper())
         self.warranty_cb.setChecked(rma.is_warranty)
         self.status_ccb.setCurrentText(rma.status)
         self.customer_po_num_input.setText(rma.customer_po_number)
         self.work_order_input.setText(rma.work_order)
         self.inspection_notes_text.setPlainText(rma.incoming_inspection_notes)
         self.resolution_input.setPlainText(rma.resolution_notes)
-        self.last_updated_display.setText(str(rma.last_updated))
+        self.last_updated_display.setText(rma.last_updated.strftime('%Y-%m-%d'))
         if rma.shipped_back_on:
-            self.shipped_back_date_input.setText(str(rma.shipped_back_on))
+            self.shipped_back_date_input.setText(
+                rma.shipped_back_on.strftime('%Y-%m-%d')
+            )
+
+        if rma.status == 'Closed':
+            self.shipped_back_date_input.setEnabled(False)
 
 
 class CalendarPopup(QCalendarWidget):
