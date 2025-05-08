@@ -178,13 +178,12 @@ class ViewRMARecordsWindow(QDialog):
             self.shipped_back_date_input.setText(
                 rma.shipped_back_on.strftime('%Y-%m-%d')
             )
-
         if rma.status == 'Closed':
             self.shipped_back_date_input.setEnabled(False)
 
 
 class CalendarPopup(QCalendarWidget):
-    def __init__(self, parent=None, line_edit=None) -> None:
+    def __init__(self, parent=None, line_edit: QLineEdit | None = None) -> None:
         super().__init__(parent)
         self.line_edit = line_edit
         self.setWindowFlags(Qt.WindowType.Popup)
@@ -199,12 +198,12 @@ class CalendarPopup(QCalendarWidget):
 class DateLineEdit(QLineEdit):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.calendar_popup = CalendarPopup(self, self)
+        self.calendar_popup = CalendarPopup(parent=self, line_edit=self)
 
     def mousePressEvent(self, event) -> None:
         if not self.calendar_popup.isVisible():
             self.show_calendar()
 
-    def show_calendar(self):
+    def show_calendar(self) -> None:
         self.calendar_popup.move(self.mapToGlobal(self.rect().bottomLeft()))
         self.calendar_popup.show()
