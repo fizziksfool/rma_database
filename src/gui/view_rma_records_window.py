@@ -244,7 +244,6 @@ class ViewRMARecordsWindow(QDialog):
         self.last_updated_display.setText(rma.last_updated.strftime('%Y-%m-%d'))
         self.shipped_back_date_input.clear()
         self.shipped_back_date_input.setEnabled(True)
-        self.save_button.setEnabled(False)
 
         if rma.shipped_back_on:
             self.shipped_back_date_input.setText(
@@ -253,6 +252,8 @@ class ViewRMARecordsWindow(QDialog):
 
         if rma.status == 'Closed':
             self.shipped_back_date_input.setEnabled(False)
+
+        self.save_button.setEnabled(False)
 
     def save_changes(self, rma_number: str) -> None:
         text_entries: list[str] = [
