@@ -3,7 +3,7 @@ from datetime import datetime
 from operator import attrgetter
 from typing import Any
 
-from sqlalchemy import desc, select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -195,6 +195,13 @@ def get_newest_rma_num() -> str | None:
     with SessionLocal() as session:
         return session.execute(
             select(RMA.rma_number).order_by(desc(RMA.issued_on)).limit(1)
+        ).scalar_one_or_none()
+
+
+def get_oldest_rma_num() -> str | None:
+    with SessionLocal() as session:
+        return session.execute(
+            select(RMA.rma_number).order_by(asc(RMA.issued_on)).limit(1)
         ).scalar_one_or_none()
 
 
