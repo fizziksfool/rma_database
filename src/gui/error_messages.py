@@ -31,3 +31,9 @@ def add_user_failed_message(parent) -> None:
     title = 'Error'
     message = 'Failed to add user. Invalid entry or user already exists.'
     QMessageBox.critical(parent, title, message)
+
+
+def overwrite_record_failed_message(parent) -> None:
+    title = 'Error'
+    message = 'Failed to overwrite RMA record.'
+    QMessageBox.critical(parent, title, message)

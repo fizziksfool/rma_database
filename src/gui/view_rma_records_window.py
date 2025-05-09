@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QTextEdit,
     QVBoxLayout,
@@ -17,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from ..api import get_newest_rma_num, get_rma_by_rma_num, overwrite_rma_record
 from ..database import RMA
+from .error_messages import overwrite_record_failed_message
 
 
 class ViewRMARecordsWindow(QDialog):
@@ -31,6 +33,10 @@ class ViewRMARecordsWindow(QDialog):
             rma = get_rma_by_rma_num(newest_rma)
         if rma is not None:
             self.load_rma(rma)
+
+    def _handle_save_button_pressed(self) -> None:
+        rma_number = self.rma_num_display.text()
+        self.save_changes(rma_number)
 
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
@@ -95,6 +101,8 @@ class ViewRMARecordsWindow(QDialog):
         self.go_to_first = QPushButton('\u23ee')  # ⏮︎, \u23ee
         self.go_to_last = QPushButton('\u23ed')  # ⏭︎, \u23ed
         self.save_button = QPushButton('Save')
+
+        self.save_button.clicked.connect(self._handle_save_button_pressed)
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.rma_num_label)
@@ -195,7 +203,14 @@ class ViewRMARecordsWindow(QDialog):
             datetime.strptime(self.shipped_back_date_input.text(), '%Y-%m-%d'),
         ]
 
-        overwrite_rma_record(rma_number, entries)
+        record_overwritten = overwrite_rma_record(rma_number, entries)
+
+        if record_overwritten is not True:
+            overwrite_record_failed_message(self)
+            return
+        QMessageBox.information(
+            self, 'Record Saved', f'RMA-{self.rma_num_display.text()} has been saved.'
+        )
 
 
 class CalendarPopup(QCalendarWidget):

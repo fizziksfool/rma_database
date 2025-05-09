@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
 
     def _handle_view_rma_records_button(self) -> None:
         view_rma_records_window = ViewRMARecordsWindow(self)
-        view_rma_records_window.exec()
+        view_rma_records_window.show()
 
     def create_gui(self) -> None:
         window_width = 550

@@ -233,17 +233,26 @@ def overwrite_rma_record(rma_number: str, entries: list[str | bool | datetime]) 
         if not rma:
             return False
 
-        entries_to_overwrite = [
-            rma.reason_for_return,
-            rma.is_warranty,
-            rma.status,
-            rma.customer_po_number,
-            rma.work_order,
-            rma.incoming_inspection_notes,
-            rma.resolution_notes,
-            rma.shipped_back_on,
+        # List of attribute names to overwrite
+        attribute_names = [
+            'reason_for_return',
+            'is_warranty',
+            'status',
+            'customer_po_number',
+            'work_order',
+            'incoming_inspection_notes',
+            'resolution_notes',
+            'shipped_back_on',
         ]
 
-        # Need to add in the rest of the function here. zip together entries_to_overwrite and entries?
+        if len(entries) != len(attribute_names):
+            raise ValueError(
+                'The number of entries does not match the number of attributes to overwrite.'
+            )
 
+        # Set new values
+        for attr, value in zip(attribute_names, entries):
+            setattr(rma, attr, value)
+
+        session.commit()
         return True
