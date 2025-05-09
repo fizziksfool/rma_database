@@ -59,7 +59,7 @@ class ViewRMARecordsWindow(QDialog):
         self.load_rma_data(rma)
 
     def _handle_go_to_first_button_pressed(self) -> None:
-        self.get_first_rma()
+        self.get_oldest_rma_record()
 
     def _handle_prev_button_pressed(self) -> None:
         current_rma_number = self.rma_num_display.text()
@@ -256,7 +256,7 @@ class ViewRMARecordsWindow(QDialog):
             self, 'Record Saved', f'RMA-{self.rma_num_display.text()} has been saved.'
         )
 
-    def get_first_rma(self) -> None:
+    def get_oldest_rma_record(self) -> None:
         rma: RMA | None = None
         first_rma: str | None = get_oldest_rma_num()
         if first_rma is not None:
