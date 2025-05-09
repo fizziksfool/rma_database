@@ -58,9 +58,9 @@ class ViewRMARecordsWindow(QDialog):
 
     def _handle_go_to_first_button_pressed(self) -> None: ...
 
-    def _handle_go_to_prev_button_pressed(self) -> None: ...
+    def _handle_prev_button_pressed(self) -> None: ...
 
-    def _handle_go_to_next_button_pressed(self) -> None: ...
+    def _handle_next_button_pressed(self) -> None: ...
 
     def _handle_go_to_last_button_pressed(self) -> None: ...
 
@@ -124,8 +124,8 @@ class ViewRMARecordsWindow(QDialog):
         self.last_updated_display.setStyleSheet('color: lightgreen;')
         self.prev_button = QPushButton('\u23ea')  # ⏪︎, \u23ea
         self.next_button = QPushButton('\u23e9')  # ⏩︎, \u23e9
-        self.go_to_first = QPushButton('\u23ee')  # ⏮︎, \u23ee
-        self.go_to_last = QPushButton('\u23ed')  # ⏭︎, \u23ed
+        self.go_to_first_button = QPushButton('\u23ee')  # ⏮︎, \u23ee
+        self.go_to_last_button = QPushButton('\u23ed')  # ⏭︎, \u23ed
         self.save_button = QPushButton('Save')
 
         self.save_button.clicked.connect(self._handle_save_button_pressed)
@@ -135,6 +135,10 @@ class ViewRMARecordsWindow(QDialog):
         self.search_by_rma_num_button.clicked.connect(
             self._handle_search_by_rma_button_pressed
         )
+        self.prev_button.clicked.connect(self._handle_prev_button_pressed)
+        self.next_button.clicked.connect(self._handle_next_button_pressed)
+        self.go_to_first_button.clicked.connect(self._handle_go_to_first_button_pressed)
+        self.go_to_last_button.clicked.connect(self._handle_go_to_last_button_pressed)
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.rma_num_label)
@@ -182,10 +186,10 @@ class ViewRMARecordsWindow(QDialog):
         grid_layout.addWidget(self.shipped_back_date_input, 8, 4)
 
         nav_buttons_layout = QHBoxLayout()
-        nav_buttons_layout.addWidget(self.go_to_first)
+        nav_buttons_layout.addWidget(self.go_to_first_button)
         nav_buttons_layout.addWidget(self.prev_button)
         nav_buttons_layout.addWidget(self.next_button)
-        nav_buttons_layout.addWidget(self.go_to_last)
+        nav_buttons_layout.addWidget(self.go_to_last_button)
 
         bottom_layout = QVBoxLayout()
         bottom_layout.addWidget(QLabel())  # empty widget for spacing
