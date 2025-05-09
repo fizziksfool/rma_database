@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PySide6.QtCore import QDate, Qt
+from PySide6.QtCore import QDate, Qt, Signal
 from PySide6.QtWidgets import (
     QCalendarWidget,
     QCheckBox,
@@ -16,7 +16,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ..api import get_newest_rma_num, get_rma_by_rma_num, overwrite_rma_record
+from ..api import (
+    get_newest_rma_num,
+    get_rma_by_rma_num,
+    get_rma_by_sn,
+    overwrite_rma_record,
+)
 from ..database import RMA
 from .error_messages import overwrite_record_failed_message
 
@@ -38,6 +43,19 @@ class ViewRMARecordsWindow(QDialog):
         rma_number = self.rma_num_display.text()
         self.save_changes(rma_number)
 
+    def _handle_search_by_sn_button_pressed(self) -> None:
+        sn_search_window = SNSearchWindow(self)
+        sn_search_window.searched_rma.connect(self._process_search_input)
+        sn_search_window.exec()
+
+    def _handle_search_by_rma_button_pressed(self) -> None:
+        rma_search_window = RMASearchWindow(self)
+        rma_search_window.searched_rma.connect(self._process_search_input)
+        rma_search_window.exec()
+
+    def _process_search_input(self, rma: RMA) -> None:
+        self.load_rma(rma)
+
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
         scaling_factor: int = 170
@@ -50,8 +68,8 @@ class ViewRMARecordsWindow(QDialog):
         self.rma_num_label.setStyleSheet('font-size: 20pt;')
         self.rma_num_display = QLabel()
         self.rma_num_display.setStyleSheet('color: lightgreen; font-size: 20pt;')
-        self.search_by_serial_num = QPushButton('Search by S/N')
-        self.search_by_rma_num = QPushButton('Search by RMA #')
+        self.search_by_serial_num_button = QPushButton('Search by S/N')
+        self.search_by_rma_num_button = QPushButton('Search by RMA #')
         self.customer_label = QLabel('Customer')
         self.customer_display = QLabel()
         self.customer_display.setStyleSheet('color: lightgreen;')
@@ -103,12 +121,18 @@ class ViewRMARecordsWindow(QDialog):
         self.save_button = QPushButton('Save')
 
         self.save_button.clicked.connect(self._handle_save_button_pressed)
+        self.search_by_serial_num_button.clicked.connect(
+            self._handle_search_by_sn_button_pressed
+        )
+        self.search_by_rma_num_button.clicked.connect(
+            self._handle_search_by_rma_button_pressed
+        )
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.rma_num_label)
         top_layout.addWidget(self.rma_num_display, Qt.AlignmentFlag.AlignLeft)
-        top_layout.addWidget(self.search_by_serial_num)
-        top_layout.addWidget(self.search_by_rma_num)
+        top_layout.addWidget(self.search_by_serial_num_button)
+        top_layout.addWidget(self.search_by_rma_num_button)
 
         grid_layout = QGridLayout()
         grid_layout.addWidget(self.customer_label, 0, 0)
@@ -238,3 +262,85 @@ class DateLineEdit(QLineEdit):
     def show_calendar(self) -> None:
         self.calendar_popup.move(self.mapToGlobal(self.rect().bottomLeft()))
         self.calendar_popup.show()
+
+
+class SNSearchWindow(QDialog):
+    searched_rma = Signal(RMA)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.create_gui()
+
+    def _handle_search_button_pressed(self) -> None:
+        serial_number = self.sn_input.text()
+        self.search_by_sn(serial_number)
+
+    def create_gui(self) -> None:
+        self.setFixedSize(300, 100)
+        self.setWindowTitle('Search RMAs by Serial Number')
+
+        self.sn_label = QLabel('Serial Number')
+        self.sn_input = QLineEdit()
+        self.search_button = QPushButton('Search')
+
+        self.search_button.clicked.connect(self._handle_search_button_pressed)
+
+        h_layout = QHBoxLayout()
+        h_layout.addWidget(self.sn_label)
+        h_layout.addWidget(self.sn_input)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(h_layout)
+        main_layout.addWidget(self.search_button)
+
+        self.setLayout(main_layout)
+
+    def search_by_sn(self, serial_number: str) -> None:
+        rma: RMA | None = get_rma_by_sn(serial_number)
+        if rma is not None:
+            self.searched_rma.emit(rma)
+            self.accept()
+        else:
+            QMessageBox.warning(
+                self, 'No Record Found', f'SN-{serial_number} not found.'
+            )
+
+
+class RMASearchWindow(QDialog):
+    searched_rma = Signal(RMA)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.create_gui()
+
+    def _handle_search_button_pressed(self) -> None:
+        rma_number = self.rma_input.text()
+        self.search_by_rma(rma_number)
+
+    def create_gui(self) -> None:
+        self.setFixedSize(300, 100)
+        self.setWindowTitle('Search RMAs by RMA Number')
+
+        self.rma_label = QLabel('RMA Number')
+        self.rma_input = QLineEdit()
+        self.search_button = QPushButton('Search')
+
+        self.search_button.clicked.connect(self._handle_search_button_pressed)
+
+        h_layout = QHBoxLayout()
+        h_layout.addWidget(self.rma_label)
+        h_layout.addWidget(self.rma_input)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(h_layout)
+        main_layout.addWidget(self.search_button)
+
+        self.setLayout(main_layout)
+
+    def search_by_rma(self, rma_number: str) -> None:
+        rma: RMA | None = get_rma_by_rma_num(rma_number)
+        if rma is not None:
+            self.searched_rma.emit(rma)
+            self.accept()
+        else:
+            QMessageBox.warning(self, 'No Record Found', f'RMA-{rma_number} not found.')
