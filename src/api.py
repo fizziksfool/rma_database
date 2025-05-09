@@ -219,8 +219,21 @@ def get_rma_by_rma_num(rma_number: str) -> RMA | None:
         )
 
 
-def get_rma_by_sn(serial_num: str) -> RMA | None:
+def get_rma_by_sn(serial_num: str, fuzzy: bool = False) -> RMA | None:
     with SessionLocal() as session:
+        if fuzzy:
+            return (
+                session.query(RMA)
+                .options(
+                    joinedload(RMA.part_number).joinedload(PartNumber.product),
+                    joinedload(RMA.customer),
+                    joinedload(RMA.issued_by),
+                )
+                .filter(RMA.serial_number.like(f'%{serial_num}%'))
+                .order_by(RMA.rma_number.desc())
+                .first()
+            )
+
         return (
             session.query(RMA)
             .options(
@@ -228,7 +241,7 @@ def get_rma_by_sn(serial_num: str) -> RMA | None:
                 joinedload(RMA.customer),
                 joinedload(RMA.issued_by),
             )
-            .filter(RMA.serial_number.like(f'%{serial_num}%'))
+            .filter_by(serial_number=serial_num)
             .order_by(RMA.rma_number.desc())
             .first()
         )

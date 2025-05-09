@@ -384,7 +384,7 @@ class SNSearchWindow(QDialog):
         self.setLayout(main_layout)
 
     def search_by_sn(self, serial_number: str) -> None:
-        rma: RMA | None = get_rma_by_sn(serial_number)
+        rma: RMA | None = get_rma_by_sn(serial_number, fuzzy=True)
         if rma is not None:
             self.searched_rma.emit(rma)
             self.accept()
