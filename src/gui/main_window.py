@@ -59,11 +59,11 @@ class MainWindow(QMainWindow):
 
     def _handle_view_open_rmas_button(self) -> None:
         view_open_rmas_window = ViewOpenRMAsWindow(self)
-        view_open_rmas_window.exec()
+        view_open_rmas_window.show()
 
     def _handle_view_rma_table_button(self) -> None:
         view_rma_table_window = ViewRMATable(self)
-        view_rma_table_window.exec()
+        view_rma_table_window.show()
 
     def _handle_add_new_rma_button(self) -> None:
         add_new_rma_window = AddRMAWindow(self)
