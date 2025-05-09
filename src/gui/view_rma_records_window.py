@@ -33,9 +33,9 @@ class ViewRMARecordsWindow(QDialog):
         self.set_window_size()
         self.create_gui()
         rma: RMA | None = None
-        newest_rma: str | None = get_newest_rma_num()
-        if newest_rma is not None:
-            rma = get_rma_by_rma_num(newest_rma)
+        last_rma: str | None = get_newest_rma_num()
+        if last_rma is not None:
+            rma = get_rma_by_rma_num(last_rma)
         if rma is not None:
             self.load_rma_data(rma)
 
@@ -247,6 +247,14 @@ class ViewRMARecordsWindow(QDialog):
         QMessageBox.information(
             self, 'Record Saved', f'RMA-{self.rma_num_display.text()} has been saved.'
         )
+
+    def get_first_rma(self) -> None: ...
+
+    def get_prev_rma(self, current_rma_num: str) -> None: ...
+
+    def get_next_rma(self, current_rma_num: str) -> None: ...
+
+    def get_last_rma(self) -> None: ...
 
 
 class CalendarPopup(QCalendarWidget):
