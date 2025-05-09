@@ -37,7 +37,7 @@ class ViewRMARecordsWindow(QDialog):
         if newest_rma is not None:
             rma = get_rma_by_rma_num(newest_rma)
         if rma is not None:
-            self.load_rma(rma)
+            self.load_rma_data(rma)
 
     def _handle_save_button_pressed(self) -> None:
         rma_number = self.rma_num_display.text()
@@ -54,7 +54,7 @@ class ViewRMARecordsWindow(QDialog):
         rma_search_window.exec()
 
     def _process_search_input(self, rma: RMA) -> None:
-        self.load_rma(rma)
+        self.load_rma_data(rma)
 
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
@@ -192,7 +192,7 @@ class ViewRMARecordsWindow(QDialog):
 
         self.setLayout(main_layout)
 
-    def load_rma(self, rma: RMA) -> None:
+    def load_rma_data(self, rma: RMA) -> None:
         self.rma_num_display.setText(rma.rma_number)
         self.customer_display.setText(rma.customer.name.upper())
         self.part_num_display.setText(rma.part_number.number)
