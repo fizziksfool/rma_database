@@ -57,6 +57,10 @@ class MainWindow(QMainWindow):
         add_part_number_window = AddPartNumberWindow(self)
         add_part_number_window.exec()
 
+    def _handle_add_new_rma_button(self) -> None:
+        add_new_rma_window = AddRMAWindow(self)
+        add_new_rma_window.exec()
+
     def _handle_view_open_rmas_button(self) -> None:
         view_open_rmas_window = ViewOpenRMAsWindow(self)
         view_open_rmas_window.show()
@@ -64,10 +68,6 @@ class MainWindow(QMainWindow):
     def _handle_view_rma_table_button(self) -> None:
         view_rma_table_window = ViewRMATable(self)
         view_rma_table_window.show()
-
-    def _handle_add_new_rma_button(self) -> None:
-        add_new_rma_window = AddRMAWindow(self)
-        add_new_rma_window.exec()
 
     def _handle_view_rma_records_button(self) -> None:
         view_rma_records_window = ViewRMARecordsWindow(self)
