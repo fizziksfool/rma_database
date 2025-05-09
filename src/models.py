@@ -24,7 +24,7 @@ class AllRMAsTableModel(QAbstractTableModel):
             'Part #',
             'Serial #',
             'Reason for Return',
-            'Warranty_yn',
+            'Warranty',
             'Status',
             'Date Issued',
             'Cust. PO #',
@@ -174,7 +174,7 @@ class OpenRMAsTableModel(QAbstractTableModel):
             'Part #',
             'Serial #',
             'Reason for Return',
-            'Warranty_yn',
+            'Warranty',
             'Status',
         ]
 

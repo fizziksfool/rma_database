@@ -1,4 +1,4 @@
-from datetime import datetime
+from typing import Any
 
 from PySide6.QtCore import QDate, QRegularExpression, Qt, Signal
 from PySide6.QtGui import QRegularExpressionValidator
@@ -40,10 +40,12 @@ class ViewRMARecordsWindow(QDialog):
             rma = get_rma_by_rma_num(last_rma)
         if rma is not None:
             self.load_rma_data(rma)
+        self.save_button.setEnabled(False)
 
     def _handle_save_button_pressed(self) -> None:
         rma_number = self.rma_num_display.text()
         self.save_changes(rma_number)
+        self.save_button.setEnabled(False)
 
     def _handle_search_by_sn_button_pressed(self) -> None:
         sn_search_window = SNSearchWindow(self)
@@ -71,6 +73,9 @@ class ViewRMARecordsWindow(QDialog):
 
     def _handle_go_to_last_button_pressed(self) -> None:
         self.get_last_rma()
+
+    def _enable_save_button(self) -> None:
+        self.save_button.setEnabled(True)
 
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
@@ -147,6 +152,15 @@ class ViewRMARecordsWindow(QDialog):
         self.next_button.clicked.connect(self._handle_next_button_pressed)
         self.go_to_first_button.clicked.connect(self._handle_go_to_first_button_pressed)
         self.go_to_last_button.clicked.connect(self._handle_go_to_last_button_pressed)
+
+        # Enable save button when editable fields are changed
+        self.customer_po_num_input.textChanged.connect(self._enable_save_button)
+        self.work_order_input.textChanged.connect(self._enable_save_button)
+        self.reason_for_return_text.textChanged.connect(self._enable_save_button)
+        self.inspection_notes_text.textChanged.connect(self._enable_save_button)
+        self.shipped_back_date_input.textChanged.connect(self._enable_save_button)
+        self.status_ccb.currentIndexChanged.connect(self._enable_save_button)
+        self.warranty_cb.stateChanged.connect(self._enable_save_button)
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.rma_num_label)
@@ -228,24 +242,36 @@ class ViewRMARecordsWindow(QDialog):
         self.inspection_notes_text.setPlainText(rma.incoming_inspection_notes)
         self.resolution_input.setPlainText(rma.resolution_notes)
         self.last_updated_display.setText(rma.last_updated.strftime('%Y-%m-%d'))
+        self.shipped_back_date_input.clear()
+        self.shipped_back_date_input.setEnabled(True)
+        self.save_button.setEnabled(False)
+
         if rma.shipped_back_on:
             self.shipped_back_date_input.setText(
                 rma.shipped_back_on.strftime('%Y-%m-%d')
             )
+
         if rma.status == 'Closed':
             self.shipped_back_date_input.setEnabled(False)
 
     def save_changes(self, rma_number: str) -> None:
-        entries: list[str | datetime | bool] = [
+        text_entries: list[str] = [
             self.reason_for_return_text.toPlainText(),
-            self.warranty_cb.isChecked(),
             self.status_ccb.currentText(),
             self.customer_po_num_input.text(),
             self.work_order_input.text(),
             self.inspection_notes_text.toPlainText(),
             self.resolution_input.toPlainText(),
-            datetime.strptime(self.shipped_back_date_input.text(), '%Y-%m-%d'),
+            self.shipped_back_date_input.text(),
         ]
+
+        # Check the text entries. Don't want to pass empty strings.
+        checked_text_entries: list[str | None] = [
+            text if text else None for text in text_entries
+        ]
+
+        entries: list[Any] = checked_text_entries
+        entries.append(self.warranty_cb.isChecked())
 
         record_overwritten = overwrite_rma_record(rma_number, entries)
 

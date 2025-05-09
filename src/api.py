@@ -31,7 +31,7 @@ RMA_ATTR_ACCESSORS: dict[str, Callable[[RMA], Any]] = {
     'RMA #': attrgetter('rma_number'),
     'Serial #': attrgetter('serial_number'),
     'Status': attrgetter('status'),
-    'Warranty_yn': lambda rma: 'Yes' if rma.is_warranty else 'No',
+    'Warranty': lambda rma: 'Yes' if rma.is_warranty else 'No',
     'Warranty_io': attrgetter('is_warranty'),
     'WO #': attrgetter('work_order'),
 }
@@ -247,7 +247,7 @@ def get_rma_by_sn(serial_num: str, fuzzy: bool = False) -> RMA | None:
         )
 
 
-def overwrite_rma_record(rma_number: str, entries: list[str | bool | datetime]) -> bool:
+def overwrite_rma_record(rma_number: str, entries: list[str | bool | None]) -> bool:
     with SessionLocal() as session:
         rma = session.query(RMA).filter_by(rma_number=rma_number).first()
 
@@ -257,13 +257,13 @@ def overwrite_rma_record(rma_number: str, entries: list[str | bool | datetime]) 
         # List of attribute names to overwrite
         attribute_names = [
             'reason_for_return',
-            'is_warranty',
             'status',
             'customer_po_number',
             'work_order',
             'incoming_inspection_notes',
             'resolution_notes',
             'shipped_back_on',
+            'is_warranty',
         ]
 
         if len(entries) != len(attribute_names):
@@ -273,6 +273,8 @@ def overwrite_rma_record(rma_number: str, entries: list[str | bool | datetime]) 
 
         # Set new values
         for attr, value in zip(attribute_names, entries):
+            if attr == 'shipped_back_on' and type(value) is str:
+                value = datetime.strptime(value, '%Y-%m-%d')
             setattr(rma, attr, value)
 
         session.commit()
