@@ -263,9 +263,52 @@ class ViewRMARecordsWindow(QDialog):
         if rma is not None:
             self.load_rma_data(rma)
 
-    def get_prev_rma(self, current_rma_num: str) -> None: ...
+    def get_prev_rma(self, current_rma_num: str) -> None:
+        current_num = int(current_rma_num)
 
-    def get_next_rma(self, current_rma_num: str) -> None: ...
+        try:
+            max_lookback = 1000
+            for i, num in enumerate(range(current_num - 1, 0, -1)):
+                if i >= max_lookback:
+                    break
+                rma = get_rma_by_rma_num(str(num))
+                if rma is not None:
+                    self.load_rma_data(rma)
+                    return
+        except Exception as e:
+            QMessageBox.critical(
+                self, 'Error', f'An error occured while searching: {str(e)}'
+            )
+
+        QMessageBox.information(
+            self, 'No Previous Record', 'This is the first available RMA record.'
+        )
+
+    def get_next_rma(self, current_rma_num: str) -> None:
+        current_num = int(current_rma_num)
+
+        latest_rma_str = get_newest_rma_num()
+        if latest_rma_str is None:
+            return
+        latest_rma_num = int(latest_rma_str)
+
+        try:
+            max_lookup = 100
+            for i, num in enumerate(range(current_num + 1, latest_rma_num + 1)):
+                if i >= max_lookup:
+                    break
+                rma = get_rma_by_rma_num(str(num))
+                if rma is not None:
+                    self.load_rma_data(rma)
+                    return
+        except Exception as e:
+            QMessageBox.critical(
+                self, 'Error', f'An error occured while searching: {str(e)}'
+            )
+
+        QMessageBox.information(
+            self, 'No Next Record', 'This is the last available RMA record.'
+        )
 
     def get_last_rma(self) -> None:
         rma: RMA | None = None
