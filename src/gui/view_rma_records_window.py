@@ -56,6 +56,14 @@ class ViewRMARecordsWindow(QDialog):
     def _process_search_input(self, rma: RMA) -> None:
         self.load_rma_data(rma)
 
+    def _handle_go_to_first_button_pressed(self) -> None: ...
+
+    def _handle_go_to_prev_button_pressed(self) -> None: ...
+
+    def _handle_go_to_next_button_pressed(self) -> None: ...
+
+    def _handle_go_to_last_button_pressed(self) -> None: ...
+
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
         scaling_factor: int = 170
