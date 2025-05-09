@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from ..api import (
     get_newest_rma_num,
+    get_oldest_rma_num,
     get_rma_by_rma_num,
     get_rma_by_sn,
     overwrite_rma_record,
@@ -56,13 +57,19 @@ class ViewRMARecordsWindow(QDialog):
     def _process_search_input(self, rma: RMA) -> None:
         self.load_rma_data(rma)
 
-    def _handle_go_to_first_button_pressed(self) -> None: ...
+    def _handle_go_to_first_button_pressed(self) -> None:
+        self.get_first_rma()
 
-    def _handle_prev_button_pressed(self) -> None: ...
+    def _handle_prev_button_pressed(self) -> None:
+        current_rma_number = self.rma_num_display.text()
+        self.get_prev_rma(current_rma_number)
 
-    def _handle_next_button_pressed(self) -> None: ...
+    def _handle_next_button_pressed(self) -> None:
+        current_rma_number = self.rma_num_display.text()
+        self.get_next_rma(current_rma_number)
 
-    def _handle_go_to_last_button_pressed(self) -> None: ...
+    def _handle_go_to_last_button_pressed(self) -> None:
+        self.get_last_rma()
 
     def set_window_size(self) -> None:
         aspect_ratio: dict[str, int] = {'width': 4, 'height': 3}
@@ -248,13 +255,25 @@ class ViewRMARecordsWindow(QDialog):
             self, 'Record Saved', f'RMA-{self.rma_num_display.text()} has been saved.'
         )
 
-    def get_first_rma(self) -> None: ...
+    def get_first_rma(self) -> None:
+        rma: RMA | None = None
+        first_rma: str | None = get_oldest_rma_num()
+        if first_rma is not None:
+            rma = get_rma_by_rma_num(first_rma)
+        if rma is not None:
+            self.load_rma_data(rma)
 
     def get_prev_rma(self, current_rma_num: str) -> None: ...
 
     def get_next_rma(self, current_rma_num: str) -> None: ...
 
-    def get_last_rma(self) -> None: ...
+    def get_last_rma(self) -> None:
+        rma: RMA | None = None
+        last_rma: str | None = get_newest_rma_num()
+        if last_rma is not None:
+            rma = get_rma_by_rma_num(last_rma)
+        if rma is not None:
+            self.load_rma_data(rma)
 
 
 class CalendarPopup(QCalendarWidget):
