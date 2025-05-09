@@ -228,7 +228,8 @@ def get_rma_by_sn(serial_num: str) -> RMA | None:
                 joinedload(RMA.customer),
                 joinedload(RMA.issued_by),
             )
-            .filter_by(serial_number=serial_num)
+            .filter(RMA.serial_number.like(f'%{serial_num}%'))
+            .order_by(RMA.rma_number.desc())
             .first()
         )
 

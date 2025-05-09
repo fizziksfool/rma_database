@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from PySide6.QtCore import QDate, Qt, Signal
+from PySide6.QtCore import QDate, QRegularExpression, Qt, Signal
+from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import (
     QCalendarWidget,
     QCheckBox,
@@ -363,6 +364,11 @@ class SNSearchWindow(QDialog):
 
         self.sn_label = QLabel('Serial Number')
         self.sn_input = QLineEdit()
+
+        regex = QRegularExpression(r'^[a-zA-Z0-9]*$')
+        validator = QRegularExpressionValidator(regex)
+        self.sn_input.setValidator(validator)
+
         self.search_button = QPushButton('Search')
 
         self.search_button.clicked.connect(self._handle_search_button_pressed)
@@ -405,8 +411,12 @@ class RMASearchWindow(QDialog):
 
         self.rma_label = QLabel('RMA Number')
         self.rma_input = QLineEdit()
-        self.search_button = QPushButton('Search')
 
+        regex = QRegularExpression(r'^\d*$')
+        validator = QRegularExpressionValidator(regex)
+        self.rma_input.setValidator(validator)
+
+        self.search_button = QPushButton('Search')
         self.search_button.clicked.connect(self._handle_search_button_pressed)
 
         h_layout = QHBoxLayout()
