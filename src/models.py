@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any
 
 from PySide6.QtCore import (
@@ -59,7 +60,13 @@ class AllRMAsTableModel(QAbstractTableModel):
 
         try:
             accessor = self.accessors[col]
-            return accessor(rma)
+
+            value = accessor(rma)
+
+            if isinstance(value, datetime):
+                return value.strftime('%Y-%m-%d')
+            return value
+
         except (IndexError, AttributeError):
             return None
 
