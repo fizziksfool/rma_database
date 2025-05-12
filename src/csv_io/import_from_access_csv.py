@@ -5,7 +5,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from src.database import (
+from ..database import (
     RMA,
     Customer,
     PartNumber,
