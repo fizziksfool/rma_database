@@ -1,4 +1,5 @@
 import win32com.client as win32
+from win32com.client.dynamic import CDispatch
 
 RMA_EMAIL_RECIPIENTS: list[str] = [
     'j.erbe@oregon-physics.com',
@@ -18,7 +19,7 @@ def send_outlook_email(
     attachments: list[str] | None = None,
     display_draft: bool = True,
 ) -> None:
-    outlook = win32.Dispatch('outlook.application')
+    outlook: CDispatch = win32.Dispatch('outlook.application')
     mail = outlook.CreateItem(0)  # 0: Mail item
 
     mail.Subject = subject
