@@ -14,9 +14,9 @@ def send_outlook_email(
 
     mail.Subject = subject
     mail.Body = body
-    mail.To = to_emails  # Comma-separated string
+    mail.To = to_emails  # semi-colon-separated string
     if cc_emails:
-        mail.CC = cc_emails  # Optional
+        mail.CC = cc_emails  # Optional semi-colon-separated string
 
     # Add attachments if any
     if attachments:
@@ -32,7 +32,7 @@ def send_outlook_email(
 if __name__ == '__main__':
     subject = 'Test Email'
     body = 'This is a test email.'
-    to_emails = 'erbe.joshua@gmail.com; j.erbe@oregon-physics.com'
+    to_emails = 'erbe.joshua@gmail.com;j.erbe@oregon-physics.com'
     cc_emails = None
     attachments = [r'C:\Users\joshua\Desktop\MA-H201-002 Hyperion H201 Manual_v1.docx']
     send_outlook_email(subject, body, to_emails, cc_emails, attachments)
