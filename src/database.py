@@ -71,7 +71,7 @@ class PartNumber(Base):
 class RMA(Base):
     __tablename__ = 'rmas'
 
-    rma_number: Mapped[str] = mapped_column(
+    rma_number: Mapped[int] = mapped_column(
         primary_key=True, unique=True, nullable=False
     )
 
