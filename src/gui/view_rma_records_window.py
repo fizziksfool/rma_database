@@ -356,19 +356,31 @@ class ViewRMARecordsWindow(QDialog):
             self.load_rma_data(rma)
 
     def send_email(self) -> None:
+        rma_number: str = self.rma_num_display.text()
+        customer_name: str = self.customer_display.text().upper()
+        serial_number: str = self.serial_num_display.text()
+        product: str = self.product_display.text().upper()
+        part_number: str = self.part_num_display.text()
+        is_warranty: bool = self.warranty_cb.isChecked()
+        warranty_text: str = 'Yes' if is_warranty else 'No'
+        customer_po_number: str = self.customer_po_num_input.text()
+        work_order: str = self.work_order_input.text()
+        reason_for_return: str = self.reason_for_return_text.toPlainText()
+        inspection_notes: str = self.inspection_notes_text.toPlainText()
+
         email_subject: str = f'RMA #: {self.rma_num_display.text()} received'
         email_body_constructor: tuple[str] = (
             'OP has received the following RMA:\n\n'
-            f'RMA #: {self.rma_num_display.text()}\n'
-            f'Customer: {self.customer_display.text().upper()}\n'
-            f'S/N: {self.serial_num_display.text()}\n'
-            f'Product: {self.product_display.text().upper()}\n'
-            f'Part #: {self.part_num_display.text()}\n'
-            f'Warranty: {"Yes" if self.warranty_cb.isChecked() else "No"}\n'
-            f'Customer PO #: {self.customer_po_num_input.text()}\n'
-            f'WO #: {self.work_order_input.text()}\n'
-            f'Reason for Return: {self.reason_for_return_text.toPlainText()}\n'
-            f'Inspection Notes: {self.inspection_notes_text.toPlainText()}',
+            f'RMA #: {rma_number}\n'
+            f'Customer: {customer_name}\n'
+            f'S/N: {serial_number}\n'
+            f'Product: {product}\n'
+            f'Part #: {part_number}\n'
+            f'Warranty: {warranty_text}\n'
+            f'Customer PO #: {customer_po_number}\n'
+            f'WO #: {work_order}\n'
+            f'Reason for Return: {reason_for_return}\n'
+            f'Inspection Notes: {inspection_notes}\n\n',
         )
         email_body = ''.join(email_body_constructor)
         send_outlook_email(subject=email_subject, body=email_body)

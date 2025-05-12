@@ -312,16 +312,16 @@ class AddRMAWindow(QDialog):
             return False
 
     def send_email(self) -> None:
+        issued_by: str = self.user_cbb.currentText().capitalize()
         rma_number: str = self.rma_number_input.text()
         customer_name: str = self.customer_cbb.currentText().upper()
+        serial_number: str = self.serial_number_input.text()
         product: str = self.product_cbb.currentText().upper()
         part_number: str = self.part_number_cbb.currentText()
-        serial_number: str = self.serial_number_input.text()
-        reason_for_return: str = self.reason_input.text()
-        issued_by: str = self.user_cbb.currentText().capitalize()
-        customer_po_number: str = self.customer_po_input.text()
         is_warranty: bool = self.warranty_cb.isChecked()
         warranty_text: str = 'Yes' if is_warranty else 'No'
+        customer_po_number: str = self.customer_po_input.text()
+        reason_for_return: str = self.reason_input.text()
 
         email_body_constructor: tuple[str] = (
             f'{issued_by} has issued the following RMA:\n\n'
