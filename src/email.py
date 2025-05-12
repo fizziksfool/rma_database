@@ -1,10 +1,19 @@
 import win32com.client as win32
 
+RMA_EMAIL_RECIPIENTS: list[str] = [
+    'j.erbe@oregon-physics.com',
+    'k.bergner@oregon-physics.com',
+    'r.pass@oregon-physics.com',
+    'r.jimenez@oregon-physics.com',
+    'm.jenkins@oregon-physics.com',
+    'm.riley@oregon-physics.com',
+]
+
 
 def send_outlook_email(
     subject: str,
     body: str,
-    to_emails: str,
+    to_emails: str = ';'.join(RMA_EMAIL_RECIPIENTS),
     cc_emails: str | None = None,
     attachments: list[str] | None = None,
     display_draft: bool = True,

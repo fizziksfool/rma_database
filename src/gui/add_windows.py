@@ -13,14 +13,9 @@ from PySide6.QtWidgets import (
 )
 from sqlalchemy import func
 
-from ..api import (
-    add_customer,
-    add_part_number,
-    add_product,
-    add_rma,
-    add_user,
-)
+from ..api import add_customer, add_part_number, add_product, add_rma, add_user
 from ..database import RMA, Customer, PartNumber, Product, SessionLocal, User
+from ..email import send_outlook_email
 from .error_messages import (
     add_customer_failed_message,
     add_part_number_failed_message,
@@ -172,6 +167,10 @@ class AddRMAWindow(QDialog):
         self.load_combobox_data()
         self.update_part_numbers()
 
+    def _handle_submit_button_pressed(self) -> None:
+        if self.add_new_rma():
+            self.send_email()
+
     def generate_rma_number(self) -> str:
         year_prefix = datetime.now().strftime('%y')
         base = int(year_prefix) * 1000
@@ -221,7 +220,7 @@ class AddRMAWindow(QDialog):
         self.warranty_cb = QCheckBox()
 
         self.submit_btn = QPushButton('Submit')
-        self.submit_btn.clicked.connect(self.add_new_rma)
+        self.submit_btn.clicked.connect(self._handle_submit_button_pressed)
 
         v_label_layout = QVBoxLayout()
         v_label_layout.addWidget(self.rma_number_label)
@@ -283,7 +282,7 @@ class AddRMAWindow(QDialog):
             for part in matching_parts:
                 self.part_number_cbb.addItem(part.number, part.id)
 
-    def add_new_rma(self) -> None:
+    def add_new_rma(self) -> bool:
         rma_number = self.rma_number_input.text()
         customer_id = self.customer_cbb.currentData()
         part_number_id = self.part_number_cbb.currentData()
@@ -307,8 +306,39 @@ class AddRMAWindow(QDialog):
             customer_po_number=customer_po_number,
         ):
             self.accept()
+            return True
         else:
             add_rma_failed_message(self)
+            return False
+
+    def send_email(self) -> None:
+        rma_number: str = self.rma_number_input.text()
+        customer_name: str = self.customer_cbb.currentText().upper()
+        product: str = self.product_cbb.currentText().upper()
+        part_number: str = self.part_number_cbb.currentText()
+        serial_number: str = self.serial_number_input.text()
+        reason_for_return: str = self.reason_input.text()
+        issued_by: str = self.user_cbb.currentText().capitalize()
+        customer_po_number: str = self.customer_po_input.text()
+        is_warranty: bool = self.warranty_cb.isChecked()
+        warranty_text: str = 'Yes' if is_warranty else 'No'
+
+        email_body_constructor: tuple[str, str] = (
+            f'{issued_by} has issued the following RMA:\n'
+            f'RMA # {rma_number}\n'
+            f'Customer: {customer_name}\n'
+            f'S/N: {serial_number}\n'
+            f'Product: {product}\n'
+            f'Part #: {part_number}\n',
+            f'Warranty: {warranty_text}\n'
+            f'Customer PO #: {customer_po_number}\n'
+            f'Reason for Return: {reason_for_return}\n',
+        )
+
+        email_subject: str = f'RMA #: {rma_number} has been issued to {customer_name}'
+        email_body: str = ''.join(email_body_constructor)
+
+        send_outlook_email(subject=email_subject, body=email_body)
 
 
 class AddUserWindow(QDialog):
