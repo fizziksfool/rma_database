@@ -25,6 +25,7 @@ from ..api import (
     overwrite_rma_record,
 )
 from ..database import RMA
+from ..email import send_outlook_email
 from .error_messages import overwrite_record_failed_message
 
 
@@ -45,6 +46,12 @@ class ViewRMARecordsWindow(QDialog):
     def _handle_save_button_pressed(self) -> None:
         rma_number = self.rma_num_display.text()
         self.save_changes(rma_number)
+        # check if the status has changed and that the new status is 'Received'
+        if (
+            self.loaded_status != self.status_ccb.currentText()
+            and self.status_ccb.currentText() == 'Received'
+        ):
+            self.send_email()
         self.save_button.setEnabled(False)
 
     def _handle_search_by_sn_button_pressed(self) -> None:
@@ -253,6 +260,8 @@ class ViewRMARecordsWindow(QDialog):
         if rma.status == 'Closed':
             self.shipped_back_date_input.setEnabled(False)
 
+        self.loaded_status = self.status_ccb.currentText()
+
         self.save_button.setEnabled(False)
 
     def save_changes(self, rma_number: str) -> None:
@@ -345,6 +354,24 @@ class ViewRMARecordsWindow(QDialog):
             rma = get_rma_by_rma_num(last_rma)
         if rma is not None:
             self.load_rma_data(rma)
+
+    def send_email(self) -> None:
+        email_subject: str = f'RMA #: {self.rma_num_display.text()} received'
+        email_body_constructor: tuple[str] = (
+            'OP has received the following RMA:\n\n'
+            f'RMA #: {self.rma_num_display.text()}\n'
+            f'Customer: {self.customer_display.text().upper()}\n'
+            f'S/N: {self.serial_num_display.text()}\n'
+            f'Product: {self.product_display.text().upper()}\n'
+            f'Part #: {self.part_num_display.text()}\n'
+            f'Warranty: {"Yes" if self.warranty_cb.isChecked() else "No"}\n'
+            f'Customer PO #: {self.customer_po_num_input.text()}\n'
+            f'WO #: {self.work_order_input.text()}\n'
+            f'Reason for Return: {self.reason_for_return_text.toPlainText()}\n'
+            f'Inspection Notes: {self.inspection_notes_text.toPlainText()}',
+        )
+        email_body = ''.join(email_body_constructor)
+        send_outlook_email(subject=email_subject, body=email_body)
 
 
 class CalendarPopup(QCalendarWidget):

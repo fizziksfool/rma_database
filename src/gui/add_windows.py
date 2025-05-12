@@ -323,13 +323,13 @@ class AddRMAWindow(QDialog):
         is_warranty: bool = self.warranty_cb.isChecked()
         warranty_text: str = 'Yes' if is_warranty else 'No'
 
-        email_body_constructor: tuple[str, str] = (
-            f'{issued_by} has issued the following RMA:\n'
-            f'RMA # {rma_number}\n'
+        email_body_constructor: tuple[str] = (
+            f'{issued_by} has issued the following RMA:\n\n'
+            f'RMA #: {rma_number}\n'
             f'Customer: {customer_name}\n'
             f'S/N: {serial_number}\n'
             f'Product: {product}\n'
-            f'Part #: {part_number}\n',
+            f'Part #: {part_number}\n'
             f'Warranty: {warranty_text}\n'
             f'Customer PO #: {customer_po_number}\n'
             f'Reason for Return: {reason_for_return}\n',
