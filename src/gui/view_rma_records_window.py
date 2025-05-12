@@ -36,7 +36,7 @@ class ViewRMARecordsWindow(QDialog):
         self.set_window_size()
         self.create_gui()
         rma: RMA | None = None
-        last_rma: str | None = get_newest_rma_num()
+        last_rma: int | None = get_newest_rma_num()
         if last_rma is not None:
             rma = get_rma_by_rma_num(last_rma)
         if rma is not None:
@@ -71,11 +71,11 @@ class ViewRMARecordsWindow(QDialog):
         self.get_oldest_rma_record()
 
     def _handle_prev_button_pressed(self) -> None:
-        current_rma_number = self.rma_num_display.text()
+        current_rma_number = int(self.rma_num_display.text())
         self.get_prev_rma(current_rma_number)
 
     def _handle_next_button_pressed(self) -> None:
-        current_rma_number = self.rma_num_display.text()
+        current_rma_number = int(self.rma_num_display.text())
         self.get_next_rma(current_rma_number)
 
     def _handle_go_to_last_button_pressed(self) -> None:
@@ -234,7 +234,7 @@ class ViewRMARecordsWindow(QDialog):
         self.setLayout(main_layout)
 
     def load_rma_data(self, rma: RMA) -> None:
-        self.rma_num_display.setText(rma.rma_number)
+        self.rma_num_display.setText(str(rma.rma_number))
         self.customer_display.setText(rma.customer.name.upper())
         self.part_num_display.setText(rma.part_number.number)
         self.product_display.setText(rma.part_number.product.name.upper())
@@ -294,21 +294,21 @@ class ViewRMARecordsWindow(QDialog):
 
     def get_oldest_rma_record(self) -> None:
         rma: RMA | None = None
-        first_rma: str | None = get_oldest_rma_num()
+        first_rma: int | None = get_oldest_rma_num()
         if first_rma is not None:
             rma = get_rma_by_rma_num(first_rma)
         if rma is not None:
             self.load_rma_data(rma)
 
-    def get_prev_rma(self, current_rma_num: str) -> None:
-        current_num = int(current_rma_num)
+    def get_prev_rma(self, current_rma_num: int) -> None:
+        current_num = current_rma_num
 
         try:
-            max_lookback = 1000
+            max_lookback = 1001
             for i, num in enumerate(range(current_num - 1, 0, -1)):
                 if i >= max_lookback:
                     break
-                rma = get_rma_by_rma_num(str(num))
+                rma = get_rma_by_rma_num(num)
                 if rma is not None:
                     self.load_rma_data(rma)
                     return
@@ -321,8 +321,8 @@ class ViewRMARecordsWindow(QDialog):
             self, 'No Previous Record', 'This is the first available RMA record.'
         )
 
-    def get_next_rma(self, current_rma_num: str) -> None:
-        current_num = int(current_rma_num)
+    def get_next_rma(self, current_rma_num: int) -> None:
+        current_num = current_rma_num
 
         latest_rma_str = get_newest_rma_num()
         if latest_rma_str is None:
@@ -330,11 +330,11 @@ class ViewRMARecordsWindow(QDialog):
         latest_rma_num = int(latest_rma_str)
 
         try:
-            max_lookup = 100
+            max_lookup = 1001
             for i, num in enumerate(range(current_num + 1, latest_rma_num + 1)):
                 if i >= max_lookup:
                     break
-                rma = get_rma_by_rma_num(str(num))
+                rma = get_rma_by_rma_num(num)
                 if rma is not None:
                     self.load_rma_data(rma)
                     return
@@ -349,7 +349,7 @@ class ViewRMARecordsWindow(QDialog):
 
     def get_last_rma(self) -> None:
         rma: RMA | None = None
-        last_rma: str | None = get_newest_rma_num()
+        last_rma: int | None = get_newest_rma_num()
         if last_rma is not None:
             rma = get_rma_by_rma_num(last_rma)
         if rma is not None:
@@ -468,7 +468,7 @@ class RMASearchWindow(QDialog):
         self.create_gui()
 
     def _handle_search_button_pressed(self) -> None:
-        rma_number = self.rma_input.text()
+        rma_number = int(self.rma_input.text())
         self.search_by_rma(rma_number)
 
     def create_gui(self) -> None:
@@ -495,7 +495,7 @@ class RMASearchWindow(QDialog):
 
         self.setLayout(main_layout)
 
-    def search_by_rma(self, rma_number: str) -> None:
+    def search_by_rma(self, rma_number: int) -> None:
         rma: RMA | None = get_rma_by_rma_num(rma_number)
         if rma is not None:
             self.searched_rma.emit(rma)

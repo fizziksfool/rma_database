@@ -283,7 +283,7 @@ class AddRMAWindow(QDialog):
                 self.part_number_cbb.addItem(part.number, part.id)
 
     def add_new_rma(self) -> bool:
-        rma_number = self.rma_number_input.text()
+        rma_number = int(self.rma_number_input.text())
         customer_id = self.customer_cbb.currentData()
         part_number_id = self.part_number_cbb.currentData()
         serial_number = self.serial_number_input.text()

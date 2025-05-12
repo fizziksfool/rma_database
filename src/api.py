@@ -140,7 +140,7 @@ def add_part_number(product_id: int, part_number: str) -> bool:
 
 
 def add_rma(
-    rma_number: str,
+    rma_number: int,
     customer_id: int,
     part_number_id: int,
     serial_number: str,
@@ -191,21 +191,21 @@ def update_status(rma_number: str, new_status: str) -> bool:
             return False
 
 
-def get_newest_rma_num() -> str | None:
+def get_newest_rma_num() -> int | None:
     with SessionLocal() as session:
         return session.execute(
             select(RMA.rma_number).order_by(desc(RMA.issued_on)).limit(1)
         ).scalar_one_or_none()
 
 
-def get_oldest_rma_num() -> str | None:
+def get_oldest_rma_num() -> int | None:
     with SessionLocal() as session:
         return session.execute(
             select(RMA.rma_number).order_by(asc(RMA.issued_on)).limit(1)
         ).scalar_one_or_none()
 
 
-def get_rma_by_rma_num(rma_number: str) -> RMA | None:
+def get_rma_by_rma_num(rma_number: int) -> RMA | None:
     with SessionLocal() as session:
         return (
             session.query(RMA)
