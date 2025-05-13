@@ -1,5 +1,5 @@
 from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QPoint, QSize, Qt
-from PySide6.QtGui import QPageLayout, QPainter, QTextDocument, QTextOption
+from PySide6.QtGui import QPageLayout, QPainter, QTextDocument
 from PySide6.QtPrintSupport import QPrintDialog, QPrinter
 from PySide6.QtWidgets import (
     QComboBox,
@@ -241,13 +241,11 @@ class WordWrapDelegate(QStyledItemDelegate):
         self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
     ) -> None:
         super().initStyleOption(option, index)
-        # option.textElideMode = Qt.TextElideMode.ElideNone
-        option.wrapText = True
 
     def sizeHint(
         self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
     ) -> QSize:
         doc = QTextDocument()
         doc.setPlainText(index.data())
-        doc.setTextWidth(option.rect.width())
+        doc.setTextWidth(option.rect.width())  # type: ignore
         return QSize(int(doc.idealWidth()), int(doc.size().height() + 10))
