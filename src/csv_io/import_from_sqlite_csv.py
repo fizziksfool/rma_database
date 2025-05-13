@@ -12,8 +12,10 @@ from ..database import (
     Product,
     SessionLocal,
     User,
+    initialize_database,
 )
 
+DB_PATH = Path('./X/rma_database/rma.db')
 IMPORT_FILE = Path('//opdata2/Company/PRODUCTION FOLDER/RMA/HyperionRMAs2.csv')
 
 
@@ -86,4 +88,6 @@ def import_rmas_from_csv():
 
 
 if __name__ == '__main__':
+    if not DB_PATH.exists():
+        initialize_database()
     import_rmas_from_csv()
