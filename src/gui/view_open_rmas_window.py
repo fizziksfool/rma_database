@@ -170,15 +170,19 @@ class ViewOpenRMAsWindow(QDialog):
 
     def apply_customer_filter(self, customer: str) -> None:
         self.proxy_model.set_customer_filter(customer)
+        self.table_view.resizeRowsToContents()
 
     def apply_product_filter(self, product: str) -> None:
         self.proxy_model.set_product_filter(product)
+        self.table_view.resizeRowsToContents()
 
     def apply_warranty_filter(self, warranty: str) -> None:
         self.proxy_model.set_warranty_filter(warranty)
+        self.table_view.resizeRowsToContents()
 
     def apply_status_filter(self, status: str) -> None:
         self.proxy_model.set_status_filter(status)
+        self.table_view.resizeRowsToContents()
 
     def adjust_column_widths(self) -> None:
         self.table_view.resizeColumnsToContents()
