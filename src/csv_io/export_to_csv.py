@@ -3,7 +3,7 @@ from pathlib import Path
 
 from ..database import RMA, SessionLocal
 
-EXPORT_FILE = Path('//opdata2/Company/PRODUCTION FOLDER/RMA/HyperionRMAs2.csv')
+EXPORT_FILE = Path('//opdata2/Company/PRODUCTION FOLDER/RMA/HyperionRMAs_backup.csv')
 
 
 def export_rmas_to_csv() -> None:

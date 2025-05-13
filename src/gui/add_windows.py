@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 from sqlalchemy import func
 
 from ..api import add_customer, add_part_number, add_product, add_rma, add_user
+from ..csv_io.export_to_csv import export_rmas_to_csv
 from ..database import RMA, Customer, PartNumber, Product, SessionLocal, User
 from ..email import send_outlook_email
 from .error_messages import (
@@ -169,6 +170,7 @@ class AddRMAWindow(QDialog):
 
     def _handle_submit_button_pressed(self) -> None:
         if self.add_new_rma():
+            export_rmas_to_csv()  # write backup to CSV
             self.send_email()
 
     def generate_rma_number(self) -> str:

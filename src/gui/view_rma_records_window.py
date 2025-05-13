@@ -24,6 +24,7 @@ from ..api import (
     get_rma_by_sn,
     overwrite_rma_record,
 )
+from ..csv_io.export_to_csv import export_rmas_to_csv
 from ..database import RMA
 from ..email import send_outlook_email
 from .error_messages import overwrite_record_failed_message
@@ -46,6 +47,7 @@ class ViewRMARecordsWindow(QDialog):
     def _handle_save_button_pressed(self) -> None:
         rma_number = self.rma_num_display.text()
         self.save_changes(rma_number)
+        export_rmas_to_csv()  # write backup to CSV
         # check if the status has changed and that the new status is 'Received'
         if (
             self.loaded_status != self.status_ccb.currentText()
