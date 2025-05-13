@@ -25,7 +25,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.table_view = QTableView(self)
         self.table_view.setWordWrap(True)
         self.table_view.setTextElideMode(Qt.TextElideMode.ElideNone)
-        self.table_view.setItemDelegate(WordWrapDelegate())
+        self.table_view.setItemDelegate(WordWrapDelegate(self.table_view))
 
         self.print_button = QPushButton('Print', self)
         self.print_button.clicked.connect(self._handle_print_button_pressed)
@@ -183,9 +183,11 @@ class ViewOpenRMAsWindow(QDialog):
     def adjust_column_widths(self) -> None:
         self.table_view.resizeColumnsToContents()
         extra_padding = 15
+        max_column_width = 163
         for col in range(self.model.columnCount()):
             current_width = self.table_view.columnWidth(col)
-            self.table_view.setColumnWidth(col, current_width + extra_padding)
+            col_width = min(current_width, max_column_width)
+            self.table_view.setColumnWidth(col, col_width + extra_padding)
 
     def adjust_window_size(self) -> None:
         """
@@ -237,6 +239,10 @@ class ViewOpenRMAsWindow(QDialog):
 
 
 class WordWrapDelegate(QStyledItemDelegate):
+    def __init__(self, table_view: QTableView, parent=None):
+        super().__init__(parent)
+        self.table_view = table_view
+
     def initStyleOption(
         self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
     ) -> None:
@@ -247,5 +253,8 @@ class WordWrapDelegate(QStyledItemDelegate):
     ) -> QSize:
         doc = QTextDocument()
         doc.setPlainText(index.data())
-        doc.setTextWidth(option.rect.width())  # type: ignore
+
+        column_width = self.table_view.columnWidth(index.column())
+        doc.setTextWidth(column_width)
+
         return QSize(int(doc.idealWidth()), int(doc.size().height() + 10))
