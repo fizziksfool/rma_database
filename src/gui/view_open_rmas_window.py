@@ -1,5 +1,5 @@
-from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QPageLayout, QPainter
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QPoint, QSize, Qt
+from PySide6.QtGui import QPageLayout, QPainter, QTextDocument, QTextOption
 from PySide6.QtPrintSupport import QPrintDialog, QPrinter
 from PySide6.QtWidgets import (
     QComboBox,
@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
     QPushButton,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableView,
     QVBoxLayout,
 )
@@ -21,6 +23,9 @@ class ViewOpenRMAsWindow(QDialog):
         super().__init__(parent)
         self.setWindowTitle('View Open RMAs')
         self.table_view = QTableView(self)
+        self.table_view.setWordWrap(True)
+        self.table_view.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.table_view.setItemDelegate(WordWrapDelegate())
 
         self.print_button = QPushButton('Print', self)
         self.print_button.clicked.connect(self._handle_print_button_pressed)
@@ -110,12 +115,6 @@ class ViewOpenRMAsWindow(QDialog):
 
             painter.end()
 
-        # printer = QPrinter(QPrinter.PrinterMode.HighResolution)
-        # printer.setPageOrientation(QPageLayout.Orientation.Landscape)
-        # dialog = QPrintDialog(printer, self)
-        # if dialog.exec():
-        #     self.table_view.render(printer)
-
     def load_data(self) -> None:
         with SessionLocal() as session:
             open_rmas = (
@@ -166,6 +165,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # sort by ascending RMA#
 
         self.adjust_column_widths()
+        self.table_view.resizeRowsToContents()
         self.adjust_window_size()
 
     def apply_customer_filter(self, customer: str) -> None:
@@ -177,8 +177,8 @@ class ViewOpenRMAsWindow(QDialog):
     def apply_warranty_filter(self, warranty: str) -> None:
         self.proxy_model.set_warranty_filter(warranty)
 
-    def apply_status_filter(self, warranty: str) -> None:
-        self.proxy_model.set_status_filter(warranty)
+    def apply_status_filter(self, status: str) -> None:
+        self.proxy_model.set_status_filter(status)
 
     def adjust_column_widths(self) -> None:
         self.table_view.resizeColumnsToContents()
@@ -208,7 +208,7 @@ class ViewOpenRMAsWindow(QDialog):
             self.table_view.verticalScrollBar().isVisible()
             * self.table_view.verticalScrollBar().sizeHint().width()
         )
-        horizontal_padding = 20
+        horizontal_padding = 30
 
         row_count = self.table_view.model().rowCount()
         row_height = self.table_view.verticalHeader().defaultSectionSize()
@@ -234,3 +234,20 @@ class ViewOpenRMAsWindow(QDialog):
         final_height = min(full_height, max_height)
 
         self.resize(final_width, final_height)
+
+
+class WordWrapDelegate(QStyledItemDelegate):
+    def initStyleOption(
+        self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
+    ) -> None:
+        super().initStyleOption(option, index)
+        # option.textElideMode = Qt.TextElideMode.ElideNone
+        option.wrapText = True
+
+    def sizeHint(
+        self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
+    ) -> QSize:
+        doc = QTextDocument()
+        doc.setPlainText(index.data())
+        doc.setTextWidth(option.rect.width())
+        return QSize(int(doc.idealWidth()), int(doc.size().height() + 10))
