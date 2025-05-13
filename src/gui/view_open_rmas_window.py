@@ -1,9 +1,12 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, Qt
+from PySide6.QtGui import QPageLayout, QPainter
+from PySide6.QtPrintSupport import QPrintDialog, QPrinter
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QGridLayout,
     QLabel,
+    QPushButton,
     QTableView,
     QVBoxLayout,
 )
@@ -18,6 +21,10 @@ class ViewOpenRMAsWindow(QDialog):
         super().__init__(parent)
         self.setWindowTitle('View Open RMAs')
         self.table_view = QTableView(self)
+
+        self.print_button = QPushButton('Print', self)
+        self.print_button.clicked.connect(self._handle_print_button_pressed)
+        self.print_button.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.filter_customer_label = QLabel('Filter by Customer:')
         self.filter_customer_cbb = QComboBox(self)
@@ -40,6 +47,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_status_cbb.currentTextChanged.connect(self.apply_status_filter)
 
         self.filters_layout = QGridLayout()
+
         self.filters_layout.addWidget(
             self.filter_customer_label, 0, 0, Qt.AlignmentFlag.AlignRight
         )
@@ -56,6 +64,9 @@ class ViewOpenRMAsWindow(QDialog):
             self.filter_status_label, 1, 2, Qt.AlignmentFlag.AlignRight
         )
         self.filters_layout.addWidget(self.filter_status_cbb, 1, 3)
+        self.filters_layout.addWidget(
+            self.print_button, 0, 4, 2, 1, Qt.AlignmentFlag.AlignVCenter
+        )
 
         main_layout = QVBoxLayout(self)
         main_layout.addLayout(self.filters_layout)
@@ -64,6 +75,46 @@ class ViewOpenRMAsWindow(QDialog):
         self.setLayout(main_layout)
 
         self.load_data()
+
+    def _handle_print_button_pressed(self) -> None:
+        self.print_table()
+
+    def print_table(self) -> None:
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        printer.setPageOrientation(QPageLayout.Orientation.Landscape)
+
+        dialog = QPrintDialog(printer, self)
+        if dialog.exec():
+            painter = QPainter()
+            if not painter.begin(printer):
+                return
+
+            page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
+            table_size = self.table_view.size()
+
+            # Calculate scaling factors for both dimensions
+            xscale = page_rect.width() / table_size.width()
+            yscale = page_rect.height() / table_size.height()
+
+            # Choose the smaller one to maintain aspect ratio (fit-to-page)
+            scale = min(xscale, yscale)
+            painter.scale(scale, scale)
+
+            # After scaling, calculate the offset needed to center
+            x_offset = (page_rect.width() / scale - table_size.width()) / 2
+            y_offset = (page_rect.height() / scale - table_size.height()) / 2
+            painter.translate(x_offset, y_offset)
+
+            # Render the table view
+            self.table_view.render(painter, QPoint(0, 0))
+
+            painter.end()
+
+        # printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        # printer.setPageOrientation(QPageLayout.Orientation.Landscape)
+        # dialog = QPrintDialog(printer, self)
+        # if dialog.exec():
+        #     self.table_view.render(printer)
 
     def load_data(self) -> None:
         with SessionLocal() as session:
@@ -176,8 +227,8 @@ class ViewOpenRMAsWindow(QDialog):
         )
         full_width = index_width + headers_width + scrollbar_width + horizontal_padding
 
-        max_width = 1920
-        max_height = 1080
+        max_width = 1900
+        max_height = 1000
 
         final_width = min(full_width, max_width)
         final_height = min(full_height, max_height)
