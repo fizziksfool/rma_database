@@ -1,4 +1,4 @@
-import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -106,11 +106,15 @@ def generate_pdf(table_view: QTableView, pdf_path: Path) -> Path | None:
     pdf.output(str(pdf_path))
 
 
-def print_pdf(table_view: QTableView) -> None:
+def open_pdf(table_view: QTableView) -> None:
     temp_dir = tempfile.gettempdir()
     pdf_path = Path(temp_dir) / 'open_rmas.pdf'
-    try:
-        generate_pdf(table_view, pdf_path)
-        os.startfile(pdf_path)
-    except Exception as e:
-        print(f'Error generating PDF: {e}')
+    generate_pdf(table_view, pdf_path)
+
+    # Open the PDF file using the default PDF viewer
+    subprocess.run(
+        ['start', '', str(pdf_path)],
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
