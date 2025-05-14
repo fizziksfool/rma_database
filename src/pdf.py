@@ -1,9 +1,13 @@
+import os
+import tempfile
+from pathlib import Path
+
 from fpdf import FPDF
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTableView
 
 
-def export_table_to_pdf(table_view: QTableView) -> None:
+def generate_pdf(table_view: QTableView, pdf_path: Path) -> Path | None:
     model = table_view.model()
     if model is None:
         return
@@ -99,4 +103,14 @@ def export_table_to_pdf(table_view: QTableView) -> None:
         pdf.set_y(y_start + row_height)
 
     # Save file
-    pdf.output('table.pdf')
+    pdf.output(str(pdf_path))
+
+
+def print_pdf(table_view: QTableView) -> None:
+    temp_dir = tempfile.gettempdir()
+    pdf_path = Path(temp_dir) / 'open_rmas.pdf'
+    try:
+        generate_pdf(table_view, pdf_path)
+        os.startfile(pdf_path)
+    except Exception as e:
+        print(f'Error generating PDF: {e}')

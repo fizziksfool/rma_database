@@ -1,6 +1,5 @@
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QPoint, QSize, Qt
-from PySide6.QtGui import QPageLayout, QPainter, QTextDocument
-from PySide6.QtPrintSupport import QPrintDialog, QPrinter
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSize, Qt
+from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -16,6 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from ..database import RMA, PartNumber, SessionLocal
 from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
+from ..pdf import print_pdf
 
 
 class ViewOpenRMAsWindow(QDialog):
@@ -82,38 +82,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.load_data()
 
     def _handle_print_button_pressed(self) -> None:
-        self.print_table()
-
-    def print_table(self) -> None:
-        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
-        printer.setPageOrientation(QPageLayout.Orientation.Landscape)
-
-        dialog = QPrintDialog(printer, self)
-        if dialog.exec():
-            painter = QPainter()
-            if not painter.begin(printer):
-                return
-
-            page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-            table_size = self.table_view.size()
-
-            # Calculate scaling factors for both dimensions
-            xscale = page_rect.width() / table_size.width()
-            yscale = page_rect.height() / table_size.height()
-
-            # Choose the smaller one to maintain aspect ratio (fit-to-page)
-            scale = min(xscale, yscale)
-            painter.scale(scale, scale)
-
-            # After scaling, calculate the offset needed to center
-            x_offset = (page_rect.width() / scale - table_size.width()) / 2
-            y_offset = (page_rect.height() / scale - table_size.height()) / 2
-            painter.translate(x_offset, y_offset)
-
-            # Render the table view
-            self.table_view.render(painter, QPoint(0, 0))
-
-            painter.end()
+        print_pdf(self.table_view)
 
     def load_data(self) -> None:
         with SessionLocal() as session:
