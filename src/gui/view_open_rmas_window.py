@@ -16,7 +16,7 @@ from sqlalchemy.orm import joinedload
 from ..database import RMA, PartNumber, SessionLocal
 from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
 from ..pdf import open_pdf
-from .error_messages import open_pdf_viewer_failed_message
+from .error_messages import open_pdf_failed_message
 
 
 class ViewOpenRMAsWindow(QDialog):
@@ -86,7 +86,7 @@ class ViewOpenRMAsWindow(QDialog):
         try:
             open_pdf(self.table_view)
         except Exception as e:
-            open_pdf_viewer_failed_message(self, e)
+            open_pdf_failed_message(self, e)
 
     def load_data(self) -> None:
         with SessionLocal() as session:

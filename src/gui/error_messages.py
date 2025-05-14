@@ -39,7 +39,7 @@ def overwrite_record_failed_message(parent) -> None:
     QMessageBox.critical(parent, title, message)
 
 
-def open_pdf_viewer_failed_message(parent, error) -> None:
+def open_pdf_failed_message(parent, error) -> None:
     title = 'Error'
     message = f'Failed to open printable RMA table.\n\n{str(error)}'
     QMessageBox.critical(parent, title, message)
