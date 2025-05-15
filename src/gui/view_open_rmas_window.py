@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from ..database import RMA, PartNumber, SessionLocal
 from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
-from ..pdf2 import PDF
+from ..pdf import PDF
 from .error_messages import open_pdf_failed_message
 
 
