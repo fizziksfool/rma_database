@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from ..database import RMA, PartNumber, SessionLocal
 from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
-from ..pdf import open_pdf
+from ..pdf2 import PDF
 from .error_messages import open_pdf_failed_message
 
 
@@ -83,8 +83,9 @@ class ViewOpenRMAsWindow(QDialog):
         self.load_data()
 
     def _handle_print_button_pressed(self) -> None:
+        pdf = PDF(self.table_view)
         try:
-            open_pdf(self.table_view)
+            pdf.open()
         except Exception as e:
             open_pdf_failed_message(self, e)
 

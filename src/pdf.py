@@ -94,7 +94,6 @@ def generate_pdf(table_view: QTableView, pdf_path: Path) -> Path | None:
         row_height = max_lines * LINE_HEIGHT + 2 * PADDING_TOP
 
         # Check for page break
-        print(f'{y_start = }, {row_height = }, {page_height = }')
         if y_start + row_height > page_height:
             pdf.add_page()
             if Path(logo_path).exists():
