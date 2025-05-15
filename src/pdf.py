@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Literal
 
 from fpdf import FPDF
+from fpdf.enums import TableCellFillMode
+from fpdf.fonts import FontFace
 from PySide6.QtCore import QAbstractItemModel, Qt
 from PySide6.QtWidgets import QTableView
 
@@ -31,10 +33,7 @@ class PDF(FPDF):
         format: Literal['Letter'] = 'Letter',
     ) -> None:
         super().__init__(orientation, unit, format)
-        self.t_margin = MARGIN
-        self.b_margin = MARGIN
-        self.l_margin = MARGIN
-        self.r_margin = MARGIN
+        self.set_margin(MARGIN)  # set all margin to the same value
         self.model: QAbstractItemModel = table.model()
         if self.model is None:
             raise ValueError('Table model is None')
@@ -73,10 +72,9 @@ class PDF(FPDF):
                 for col in range(self.model.columnCount())
             ],
         )
-
+        headings_style = FontFace(emphasis='BOLD', color=0, fill_color=(50, 168, 82))
         with self.table(
-            col_widths=COL_WIDTHS,
-            text_align='C',
+            col_widths=COL_WIDTHS, text_align='C', headings_style=headings_style
         ) as table:
             for data_row in headers:
                 row = table.row()
@@ -89,9 +87,12 @@ class PDF(FPDF):
         y_start = self.get_y()
         self.set_xy(x_start, y_start)
         with self.table(
+            borders_layout='ALL',
             col_widths=COL_WIDTHS,
             text_align=DATA_ALIGNMENT,
             first_row_as_headings=False,
+            cell_fill_color=(194, 194, 194),
+            cell_fill_mode=TableCellFillMode.ROWS,
         ) as table:
             for row in range(self.model.rowCount()):
                 pdf_row = table.row()
