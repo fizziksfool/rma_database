@@ -113,11 +113,8 @@ class AllRMAsSortFilterProxyModel(QSortFilterProxyModel):
             self.warranty_filter = warranty
         self.invalidateFilter()
 
-    def set_status_filter(self, status: str) -> None:
-        if status == 'All':
-            self.status_filter = ''
-        else:
-            self.status_filter = status
+    def set_status_filter(self, statuses: list[str]) -> None:
+        self.status_filter = statuses  # list may be empty
         self.invalidateFilter()
 
     def filterAcceptsRow(
@@ -144,9 +141,12 @@ class AllRMAsSortFilterProxyModel(QSortFilterProxyModel):
                 return False
 
         # Status filter (column 7)
-        if self.status_filter:
+        if self.status_filter is not None:
+            if not self.status_filter:
+                # Empty list = no matches
+                return False
             status_index = model.index(source_row, 7, source_parent)
-            if status_index.data() != self.status_filter:
+            if status_index.data() not in self.status_filter:
                 return False
 
         return True
@@ -254,37 +254,25 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.customer_filter = ''
-        self.product_filter = ''
-        self.warranty_filter = ''
-        self.status_filter = ''
+        self.customer_filter: str = ''
+        self.product_filter: str = ''
+        self.warranty_filter: str = ''
+        self.status_filter: list[str] = []
 
     def set_customer_filter(self, customer_name: str) -> None:
-        if customer_name == 'All Customers':
-            self.customer_filter = ''
-        else:
-            self.customer_filter = customer_name
+        self.customer_filter = '' if customer_name == 'No Filter' else customer_name
         self.invalidateFilter()
 
     def set_product_filter(self, product_name: str) -> None:
-        if product_name == 'All Products':
-            self.product_filter = ''
-        else:
-            self.product_filter = product_name
+        self.product_filter = '' if product_name == 'No Filter' else product_name
         self.invalidateFilter()
 
     def set_warranty_filter(self, warranty: str) -> None:
-        if warranty == 'Any':
-            self.warranty_filter = ''
-        else:
-            self.warranty_filter = warranty
+        self.warranty_filter = '' if warranty == 'No Filter' else warranty
         self.invalidateFilter()
 
-    def set_status_filter(self, status: str) -> None:
-        if status == 'All':
-            self.status_filter = ''
-        else:
-            self.status_filter = status
+    def set_status_filter(self, status: list[str]) -> None:
+        self.status_filter = status
         self.invalidateFilter()
 
     def filterAcceptsRow(
@@ -313,7 +301,15 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
         # Status filter (column 7)
         if self.status_filter:
             status_index = model.index(source_row, 7, source_parent)
-            if status_index.data() != self.status_filter:
+            if status_index.data() not in self.status_filter:
                 return False
+
+        if self.status_filter:  # i.e., list is not empty
+            status_index = model.index(source_row, 7, source_parent)
+            if status_index.data() not in self.status_filter:
+                return False
+        else:
+            # If the list is empty, don't match any rows
+            return False
 
         return True

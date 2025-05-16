@@ -1,15 +1,33 @@
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSize, Qt
-from PySide6.QtGui import QTextDocument
+from typing import Any
+
+from PySide6.QtCore import (
+    QEvent,
+    QModelIndex,
+    QObject,
+    QPersistentModelIndex,
+    QPoint,
+    QSize,
+    Qt,
+    QTimer,
+    Signal,
+)
+from PySide6.QtGui import QCursor, QMouseEvent, QTextDocument
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QDialog,
+    QFrame,
     QGridLayout,
     QLabel,
+    QListWidget,
+    QListWidgetItem,
     QPushButton,
     QStyledItemDelegate,
     QStyleOptionViewItem,
     QTableView,
+    QToolButton,
     QVBoxLayout,
+    QWidget,
 )
 from sqlalchemy.orm import joinedload
 
@@ -48,9 +66,16 @@ class ViewOpenRMAsWindow(QDialog):
         self.filter_warranty_cbb.currentTextChanged.connect(self.apply_warranty_filter)
 
         self.filter_status_label = QLabel('Filter by Status:')
-        self.filter_status_cbb = QComboBox(self)
-        self.filter_status_cbb.setStyleSheet('color: lightgreen;')
-        self.filter_status_cbb.currentTextChanged.connect(self.apply_status_filter)
+        selection_list = [
+            'Select All',
+            'Issued',
+            'Received',
+            'In Process',
+            'Complete',
+        ]
+        self.filter_status_dd = MultiSelectDropdown(items=selection_list, parent=self)
+        self.filter_status_dd.setStyleSheet('color: lightgreen;')
+        self.filter_status_dd.selectionChanged.connect(self.apply_status_filter)
 
         self.filters_layout = QGridLayout()
 
@@ -69,7 +94,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.filters_layout.addWidget(
             self.filter_status_label, 1, 2, Qt.AlignmentFlag.AlignRight
         )
-        self.filters_layout.addWidget(self.filter_status_cbb, 1, 3)
+        self.filters_layout.addWidget(self.filter_status_dd, 1, 3)
         self.filters_layout.addWidget(
             self.print_button, 0, 4, 2, 1, Qt.AlignmentFlag.AlignVCenter
         )
@@ -81,6 +106,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.setLayout(main_layout)
 
         self.load_data()
+        self.filter_status_dd.emit_selection_changed()
 
     def _handle_print_button_pressed(self) -> None:
         pdf = PDF(self.table_view)
@@ -102,34 +128,38 @@ class ViewOpenRMAsWindow(QDialog):
                 .all()
             )
 
-        products = sorted({rma.part_number.product.name for rma in open_rmas})
-        customers = sorted({rma.customer.name for rma in open_rmas})
-        warranties = sorted({'Yes' if rma.is_warranty else 'No' for rma in open_rmas})
-        statuses = sorted({rma.status for rma in open_rmas})
+        products: list[str] = sorted(
+            {rma.part_number.product.name for rma in open_rmas}
+        )
+        customers: list[str] = sorted({rma.customer.name for rma in open_rmas})
+        warranties: list[str] = sorted(
+            {'Yes' if rma.is_warranty else 'No' for rma in open_rmas}
+        )
+        # statuses: list[str] = sorted({rma.status for rma in open_rmas})
 
         self.filter_customer_cbb.blockSignals(True)  # prevent premature filtering
         self.filter_customer_cbb.clear()
-        self.filter_customer_cbb.addItem('All Customers')
+        self.filter_customer_cbb.addItem('No Filter')
         self.filter_customer_cbb.addItems(customers)
         self.filter_customer_cbb.blockSignals(False)
 
         self.filter_product_cbb.blockSignals(True)  # prevent premature filtering
         self.filter_product_cbb.clear()
-        self.filter_product_cbb.addItem('All Products')
+        self.filter_product_cbb.addItem('No Filter')
         self.filter_product_cbb.addItems(products)
         self.filter_product_cbb.blockSignals(False)
 
         self.filter_warranty_cbb.blockSignals(True)  # prevent premature filtering
         self.filter_warranty_cbb.clear()
-        self.filter_warranty_cbb.addItem('Any')
+        self.filter_warranty_cbb.addItem('No Filter')
         self.filter_warranty_cbb.addItems(warranties)
         self.filter_warranty_cbb.blockSignals(False)
 
-        self.filter_status_cbb.blockSignals(True)  # prevent premature filtering
-        self.filter_status_cbb.clear()
-        self.filter_status_cbb.addItem('All')
-        self.filter_status_cbb.addItems(statuses)
-        self.filter_status_cbb.blockSignals(False)
+        # self.filter_status_dd.blockSignals(True)  # prevent premature filtering
+        # self.filter_status_dd.clear()
+        # self.filter_status_dd.addDefaultItem('Select All')
+        # self.filter_status_dd.addItems(statuses)
+        # self.filter_status_dd.blockSignals(False)
 
         self.model = OpenRMAsTableModel(open_rmas)
         self.proxy_model = OpenRMAsSortFilterProxyModel()
@@ -154,8 +184,9 @@ class ViewOpenRMAsWindow(QDialog):
         self.proxy_model.set_warranty_filter(warranty)
         self.table_view.resizeRowsToContents()
 
-    def apply_status_filter(self, status: str) -> None:
-        self.proxy_model.set_status_filter(status)
+    def apply_status_filter(self, selected_statuses: list[str]) -> None:
+        filtered_statuses = [s for s in selected_statuses if s != 'Select All']
+        self.proxy_model.set_status_filter(filtered_statuses)
         self.table_view.resizeRowsToContents()
 
     def adjust_column_widths(self) -> None:
@@ -236,3 +267,152 @@ class WordWrapDelegate(QStyledItemDelegate):
         doc.setTextWidth(column_width)
 
         return QSize(int(doc.idealWidth()), int(doc.size().height() + 10))
+
+
+class MultiSelectDropdown(QWidget):
+    selectionChanged = Signal(list)
+
+    def __init__(self, items: list[str], parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        self.selected_items: list[str] = []
+        self.items = items
+        self.dropdown_visible = False
+
+        self.button = QToolButton(self)
+        self.button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.button.clicked.connect(self.toggle_dropdown)
+
+        self.dropdown = ClickableListWidget()
+        self.dropdown.setWindowFlags(Qt.WindowType.Popup)
+        self.dropdown.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
+        self.dropdown.checkedItemsChanged.connect(self.emit_selection_changed)
+        # self.dropdown.setSelectionMode(QListWidget.SelectionMode.NoSelection)
+
+        for text in items:
+            item = QListWidgetItem(text)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked)
+            self.dropdown.addItem(item)
+
+        self.dropdown.itemChanged.connect(self.update_selection)
+
+        # Global event filter for click-outside behavior
+        QTimer.singleShot(0, self.register_event_filter)
+
+    def toggle_dropdown(self) -> None:
+        if not self.dropdown_visible:
+            point = self.button.mapToGlobal(QPoint(0, self.button.height()))
+            self.dropdown.move(point)
+            self.dropdown.setMinimumWidth(self.button.width())
+            self.dropdown.show()
+            self.dropdown_visible = True
+        else:
+            self.dropdown.hide()
+            self.dropdown_visible = False
+
+    def update_selection(self, item: QListWidgetItem) -> None:
+        selected = []
+        for index in range(self.dropdown.count()):
+            list_item = self.dropdown.item(index)
+            if list_item.checkState() == Qt.CheckState.Checked:
+                selected.append(list_item.text())
+
+        self.selected_items = selected
+        if selected == 'No Filter':
+            self.button.setText('No Filter')
+        else:
+            self.button.setText('Select items')
+
+    def get_selected_items(self) -> list[Any]:
+        return self.selected_items
+
+    def clear(self) -> None:
+        self.items = []
+
+    def addDefaultItem(self, text: str) -> None:
+        item = QListWidgetItem(text)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setCheckState(Qt.CheckState.Checked)
+        self.dropdown.addItem(item)
+
+    def addItems(self, items: list[str]) -> None:
+        for text in items:
+            item = QListWidgetItem(text)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked)
+            self.dropdown.addItem(item)
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        # Close the dropdown if the user clicks outside it
+        if self.dropdown_visible and event.type() == QEvent.Type.MouseButtonPress:
+            if not self.dropdown.geometry().contains(
+                QCursor.pos()
+            ) and not self.button.geometry().contains(
+                self.mapFromGlobal(QCursor.pos())
+            ):
+                self.emit_selection_changed()
+                self.dropdown.hide()
+                self.dropdown_visible = False
+        return super().eventFilter(obj, event)
+
+    def register_event_filter(self) -> None:
+        app = QApplication.instance()
+        if app:
+            app.installEventFilter(self)
+
+    def emit_selection_changed(self) -> None:
+        selected = self.get_selected_items()  # returns list[str]
+        print(f'{selected = }')
+        self.selectionChanged.emit(selected)
+
+
+class ClickableListWidget(QListWidget):
+    checkedItemsChanged = Signal(list)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        item = self.itemAt(event.position().toPoint())
+        if item is not None:
+            new_state = (
+                Qt.CheckState.Unchecked
+                if item.checkState() == Qt.CheckState.Checked
+                else Qt.CheckState.Checked
+            )
+            item.setCheckState(new_state)
+
+            if item.text() == 'Select All':
+                self.set_all_items_checked(new_state == Qt.CheckState.Checked)
+            else:
+                self.update_select_all_check_state()
+
+            self.emit_checked_items()
+
+        super().mousePressEvent(event)
+
+    def set_all_items_checked(self, checked: bool) -> None:
+        state = Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
+        for i in range(self.count()):
+            item = self.item(i)
+            item.setCheckState(state)
+
+    def update_select_all_check_state(self) -> None:
+        # Assume "Select All" is always item 0
+        all_checked = all(
+            self.item(i).checkState() == Qt.CheckState.Checked
+            for i in range(1, self.count())
+        )
+        select_all_item = self.item(0)
+        select_all_item.setCheckState(
+            Qt.CheckState.Checked if all_checked else Qt.CheckState.Unchecked
+        )
+
+    def emit_checked_items(self) -> None:
+        checked_items = [
+            self.item(i).text()
+            for i in range(1, self.count())  # skip "Select All"
+            if self.item(i).checkState() == Qt.CheckState.Checked
+        ]
+        self.checkedItemsChanged.emit(checked_items)
