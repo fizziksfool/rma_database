@@ -36,6 +36,7 @@ class PDF(FPDF):
     ) -> None:
         super().__init__(orientation, unit, format)
         self.set_margin(MARGIN)  # set all margin to the same value
+        self.set_auto_page_break(auto=True, margin=10)
         self.model: QAbstractItemModel = table.model()
         if self.model is None:
             raise ValueError('Table model is None')
@@ -53,10 +54,10 @@ class PDF(FPDF):
                 logo_path,
                 x=self.r_margin / 2,
                 y=self.t_margin / 2,
-                w=40,
+                h=self.t_margin / 2,
                 keep_aspect_ratio=True,
             )
-        self.set_font(family='Helvetica', style='B', size=24)
+        self.set_font(family='Helvetica', style='B', size=int(self.t_margin * 1.75))
         self.cell(text='Open RMAs', align='C', center=True)
 
     def _draw_table_header(self) -> None:
@@ -74,7 +75,7 @@ class PDF(FPDF):
                 for col in range(self.model.columnCount())
             ],
         )
-        headings_style = FontFace(emphasis='BOLD', color=0, fill_color=(50, 168, 82))
+        headings_style = FontFace(emphasis='BOLD', color=255, fill_color=(0, 112, 60))
         with self.table(
             col_widths=COL_WIDTHS, text_align='C', headings_style=headings_style
         ) as table:
@@ -96,7 +97,7 @@ class PDF(FPDF):
             first_row_as_headings=False,
             cell_fill_color=(194, 194, 194),
             cell_fill_mode=TableCellFillMode.ROWS,
-            line_height=5,
+            line_height=6,
         ) as table:
             for row in range(self.model.rowCount()):
                 pdf_row = table.row()
@@ -112,7 +113,7 @@ class PDF(FPDF):
                     pdf_row.cell(datum)
 
     def footer(self) -> None:
-        self.set_y(-self.b_margin / 2)  # center the cursor within the footer height
+        self.set_y(-MARGIN / 2)  # center the cursor within the footer height
         self.set_x(self.w - (self.r_margin / 2))
         self.set_font(family='Helvetica', style='I', size=8)
         self.cell(text=f'{self.page_no()}', align='C')
