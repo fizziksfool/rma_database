@@ -25,6 +25,8 @@ DATA_ALIGNMENT = ('C', 'C', 'C', 'C', 'C', 'L', 'C', 'C')
 
 
 class PDF(FPDF):
+    instance_number = 1
+
     def __init__(
         self,
         table: QTableView,
@@ -82,7 +84,8 @@ class PDF(FPDF):
                     row.cell(datum)
 
     def _draw_data_table(self) -> None:
-        self.set_font(family='Helvetica', size=10)
+        font_size = 10
+        self.set_font(family='Helvetica', size=font_size)
         x_start = self.l_margin
         y_start = self.get_y()
         self.set_xy(x_start, y_start)
@@ -93,6 +96,7 @@ class PDF(FPDF):
             first_row_as_headings=False,
             cell_fill_color=(194, 194, 194),
             cell_fill_mode=TableCellFillMode.ROWS,
+            line_height=5,
         ) as table:
             for row in range(self.model.rowCount()):
                 pdf_row = table.row()
@@ -115,7 +119,7 @@ class PDF(FPDF):
 
     def open(self) -> None:
         temp_dir = tempfile.gettempdir()
-        pdf_path = Path(temp_dir) / 'open_rmas.pdf'
+        pdf_path = Path(temp_dir) / f'open_rmas{self.__class__.instance_number}.pdf'
 
         self.output(str(pdf_path))
 
@@ -126,9 +130,8 @@ class PDF(FPDF):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+        self.increment_instance_number()
 
-
-# if __name__ == '__main__':
-#     pdf = PDF()
-#     pdf.add_page()
-#     pdf.output('test.pdf')
+    @classmethod
+    def increment_instance_number(cls) -> None:
+        cls.instance_number += 1
