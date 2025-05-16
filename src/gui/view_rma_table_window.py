@@ -1,9 +1,12 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSize, Qt
+from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QGridLayout,
     QLabel,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableView,
     QVBoxLayout,
 )
@@ -20,6 +23,9 @@ class ViewRMATable(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
         self.setWindowTitle('RMA Table')
         self.table_view = QTableView(self)
+        self.table_view.setWordWrap(True)
+        self.table_view.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.table_view.setItemDelegate(WordWrapDelegate(self.table_view))
 
         self.filter_customer_label = QLabel('Filter by Customer:')
         self.filter_customer_cbb = QComboBox(self)
@@ -116,26 +122,33 @@ class ViewRMATable(QDialog):
         self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # sort by ascending RMA#
 
         self.adjust_column_widths()
+        self.table_view.resizeRowsToContents()
         self.adjust_window_size()
 
     def apply_customer_filter(self, customer: str) -> None:
         self.proxy_model.set_customer_filter(customer)
+        self.table_view.resizeRowsToContents()
 
     def apply_product_filter(self, product: str) -> None:
         self.proxy_model.set_product_filter(product)
+        self.table_view.resizeRowsToContents()
 
     def apply_warranty_filter(self, warranty: str) -> None:
         self.proxy_model.set_warranty_filter(warranty)
+        self.table_view.resizeRowsToContents()
 
-    def apply_status_filter(self, warranty: str) -> None:
-        self.proxy_model.set_status_filter(warranty)
+    def apply_status_filter(self, status: str) -> None:
+        self.proxy_model.set_status_filter(status)
+        self.table_view.resizeRowsToContents()
 
     def adjust_column_widths(self) -> None:
         self.table_view.resizeColumnsToContents()
         extra_padding = 15
+        max_column_width = 163
         for col in range(self.model.columnCount()):
             current_width = self.table_view.columnWidth(col)
-            self.table_view.setColumnWidth(col, current_width + extra_padding)
+            col_width = min(current_width, max_column_width)
+            self.table_view.setColumnWidth(col, col_width + extra_padding)
 
     def adjust_window_size(self) -> None:
         """
@@ -179,10 +192,32 @@ class ViewRMATable(QDialog):
             filters_height + (row_height * row_count) + header_height + vertical_padding
         )
 
-        max_width = 1800
+        max_width = 1900
         max_height = 1000
 
         final_width = min(full_width, max_width)
         final_height = min(full_height, max_height)
 
         self.resize(final_width, final_height)
+
+
+class WordWrapDelegate(QStyledItemDelegate):
+    def __init__(self, table_view: QTableView, parent=None) -> None:
+        super().__init__(parent)
+        self.table_view = table_view
+
+    def initStyleOption(
+        self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
+    ) -> None:
+        super().initStyleOption(option, index)
+
+    def sizeHint(
+        self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
+    ) -> QSize:
+        doc = QTextDocument()
+        doc.setPlainText(index.data())
+
+        column_width = self.table_view.columnWidth(index.column())
+        doc.setTextWidth(column_width)
+
+        return QSize(int(doc.idealWidth()), int(doc.size().height() + 10))

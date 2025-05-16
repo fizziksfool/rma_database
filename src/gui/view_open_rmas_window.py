@@ -217,7 +217,7 @@ class ViewOpenRMAsWindow(QDialog):
 
 
 class WordWrapDelegate(QStyledItemDelegate):
-    def __init__(self, table_view: QTableView, parent=None):
+    def __init__(self, table_view: QTableView, parent=None) -> None:
         super().__init__(parent)
         self.table_view = table_view
 
