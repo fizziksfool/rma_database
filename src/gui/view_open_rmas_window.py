@@ -28,7 +28,7 @@ class ViewOpenRMAsWindow(QDialog):
         self.table_view.setTextElideMode(Qt.TextElideMode.ElideNone)
         self.table_view.setItemDelegate(WordWrapDelegate(self.table_view))
 
-        self.print_button = QPushButton('Print', self)
+        self.print_button = QPushButton('Print to PDF', self)
         self.print_button.clicked.connect(self._handle_print_button_pressed)
         self.print_button.setCursor(Qt.CursorShape.PointingHandCursor)
 
