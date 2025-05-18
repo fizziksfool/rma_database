@@ -299,17 +299,9 @@ class OpenRMAsSortFilterProxyModel(QSortFilterProxyModel):
                 return False
 
         # Status filter (column 7)
-        if self.status_filter:
-            status_index = model.index(source_row, 7, source_parent)
-            if status_index.data() not in self.status_filter:
-                return False
-
-        if self.status_filter:  # i.e., list is not empty
-            status_index = model.index(source_row, 7, source_parent)
-            if status_index.data() not in self.status_filter:
-                return False
-        else:
-            # If the list is empty, don't match any rows
+        # if self.status_filter:  # If the list is not empty, filter by status
+        status_index = model.index(source_row, 7, source_parent)
+        if status_index.data() not in self.status_filter:
             return False
 
         return True

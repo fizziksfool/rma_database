@@ -107,13 +107,7 @@ class ViewOpenRMAsWindow(QDialog):
 
         self.load_data()
         self.filter_status_dd.emit_selection_changed()
-
-    def _handle_print_button_pressed(self) -> None:
-        pdf = PDF(self.table_view)
-        try:
-            pdf.open()
-        except Exception as e:
-            open_pdf_failed_message(self, e)
+        self.adjust_window_size()
 
     def load_data(self) -> None:
         with SessionLocal() as session:
@@ -162,8 +156,10 @@ class ViewOpenRMAsWindow(QDialog):
         # self.filter_status_dd.blockSignals(False)
 
         self.model = OpenRMAsTableModel(open_rmas)
+
         self.proxy_model = OpenRMAsSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.model)
+
         self.table_view.setModel(self.proxy_model)
         self.table_view.setSortingEnabled(True)
         self.proxy_model.sort(0, Qt.SortOrder.AscendingOrder)  # sort by ascending RMA#
@@ -185,9 +181,18 @@ class ViewOpenRMAsWindow(QDialog):
         self.table_view.resizeRowsToContents()
 
     def apply_status_filter(self, selected_statuses: list[str]) -> None:
-        filtered_statuses = [s for s in selected_statuses if s != 'Select All']
+        filtered_statuses = [
+            status for status in selected_statuses if status != 'Select All'
+        ]
         self.proxy_model.set_status_filter(filtered_statuses)
         self.table_view.resizeRowsToContents()
+
+    def _handle_print_button_pressed(self) -> None:
+        pdf = PDF(self.table_view)
+        try:
+            pdf.open()
+        except Exception as e:
+            open_pdf_failed_message(self, e)
 
     def adjust_column_widths(self) -> None:
         self.table_view.resizeColumnsToContents()
@@ -219,7 +224,7 @@ class ViewOpenRMAsWindow(QDialog):
             self.table_view.verticalScrollBar().isVisible()
             * self.table_view.verticalScrollBar().sizeHint().width()
         )
-        horizontal_padding = 30
+        horizontal_padding = 100  # check this line on work monitor
 
         row_count = self.table_view.model().rowCount()
         row_height = self.table_view.verticalHeader().defaultSectionSize()
@@ -280,6 +285,7 @@ class MultiSelectDropdown(QWidget):
         self.dropdown_visible = False
 
         self.button = QToolButton(self)
+        self.button.setFixedWidth(220)
         self.button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.button.clicked.connect(self.toggle_dropdown)
 
@@ -294,6 +300,7 @@ class MultiSelectDropdown(QWidget):
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked)
             self.dropdown.addItem(item)
+            self.update_selection(item)
 
         self.dropdown.itemChanged.connect(self.update_selection)
 
@@ -312,36 +319,26 @@ class MultiSelectDropdown(QWidget):
             self.dropdown_visible = False
 
     def update_selection(self, item: QListWidgetItem) -> None:
-        selected = []
-        for index in range(self.dropdown.count()):
-            list_item = self.dropdown.item(index)
-            if list_item.checkState() == Qt.CheckState.Checked:
+        selected: list[str] = []
+        for i in range(self.dropdown.count()):
+            list_item = self.dropdown.item(i)
+            if (
+                list_item.checkState() == Qt.CheckState.Checked
+                and list_item.text() != 'Select All'
+            ):
                 selected.append(list_item.text())
 
         self.selected_items = selected
-        if selected == 'No Filter':
+        all_options = ['Issued', 'Received', 'In Process', 'Complete']
+
+        # check if all options are selected
+        if all(item in self.selected_items for item in all_options):
             self.button.setText('No Filter')
         else:
-            self.button.setText('Select items')
+            self.button.setText('Filtered')
 
     def get_selected_items(self) -> list[Any]:
         return self.selected_items
-
-    def clear(self) -> None:
-        self.items = []
-
-    def addDefaultItem(self, text: str) -> None:
-        item = QListWidgetItem(text)
-        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        item.setCheckState(Qt.CheckState.Checked)
-        self.dropdown.addItem(item)
-
-    def addItems(self, items: list[str]) -> None:
-        for text in items:
-            item = QListWidgetItem(text)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Checked)
-            self.dropdown.addItem(item)
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:
         # Close the dropdown if the user clicks outside it
@@ -351,7 +348,6 @@ class MultiSelectDropdown(QWidget):
             ) and not self.button.geometry().contains(
                 self.mapFromGlobal(QCursor.pos())
             ):
-                self.emit_selection_changed()
                 self.dropdown.hide()
                 self.dropdown_visible = False
         return super().eventFilter(obj, event)
@@ -362,8 +358,7 @@ class MultiSelectDropdown(QWidget):
             app.installEventFilter(self)
 
     def emit_selection_changed(self) -> None:
-        selected = self.get_selected_items()  # returns list[str]
-        print(f'{selected = }')
+        selected: list[str] = self.get_selected_items()
         self.selectionChanged.emit(selected)
 
 
