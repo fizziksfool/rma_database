@@ -141,12 +141,9 @@ class AllRMAsSortFilterProxyModel(QSortFilterProxyModel):
                 return False
 
         # Status filter (column 7)
-        if self.status_filter is not None:
-            if not self.status_filter:
-                # Empty list = no matches
-                return False
+        if self.status_filter:
             status_index = model.index(source_row, 7, source_parent)
-            if status_index.data() not in self.status_filter:
+            if status_index.data() != self.status_filter:
                 return False
 
         return True
