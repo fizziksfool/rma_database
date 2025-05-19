@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
     QDialog,
-    QFrame,
     QGridLayout,
     QLabel,
     QListWidget,
@@ -34,6 +33,7 @@ from sqlalchemy.orm import joinedload
 from ..database import RMA, PartNumber, SessionLocal
 from ..models import OpenRMAsSortFilterProxyModel, OpenRMAsTableModel
 from ..pdf import PDF
+from .custom_dropdown_style import combo_style
 from .error_messages import open_pdf_failed_message
 
 
@@ -74,7 +74,6 @@ class ViewOpenRMAsWindow(QDialog):
             'Complete',
         ]
         self.filter_status_dd = MultiSelectDropdown(items=selection_list, parent=self)
-        self.filter_status_dd.setStyleSheet('color: lightgreen;')
         self.filter_status_dd.selectionChanged.connect(self.apply_status_filter)
 
         self.filters_layout = QGridLayout()
@@ -91,10 +90,12 @@ class ViewOpenRMAsWindow(QDialog):
             self.filter_warranty_label, 0, 2, Qt.AlignmentFlag.AlignRight
         )
         self.filters_layout.addWidget(self.filter_warranty_cbb, 0, 3)
+
         self.filters_layout.addWidget(
             self.filter_status_label, 1, 2, Qt.AlignmentFlag.AlignRight
         )
         self.filters_layout.addWidget(self.filter_status_dd, 1, 3)
+
         self.filters_layout.addWidget(
             self.print_button, 0, 4, 2, 1, Qt.AlignmentFlag.AlignVCenter
         )
@@ -285,15 +286,18 @@ class MultiSelectDropdown(QWidget):
         self.dropdown_visible = False
 
         self.button = QToolButton(self)
-        self.button.setFixedWidth(220)
         self.button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.button.clicked.connect(self.toggle_dropdown)
 
-        self.dropdown = ClickableListWidget()
+        self.dropdown = ClickableListWidget(self)
         self.dropdown.setWindowFlags(Qt.WindowType.Popup)
-        self.dropdown.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
+        self.dropdown.setFixedSize(210, 213)
         self.dropdown.checkedItemsChanged.connect(self.emit_selection_changed)
-        # self.dropdown.setSelectionMode(QListWidget.SelectionMode.NoSelection)
+
+        self.button.setObjectName('statusFilterButton')
+        self.dropdown.setObjectName('clickableList')
+        self.button.setStyleSheet(combo_style)
+        self.dropdown.setStyleSheet(combo_style)
 
         for text in items:
             item = QListWidgetItem(text)
@@ -341,13 +345,11 @@ class MultiSelectDropdown(QWidget):
         return self.selected_items
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:
-        # Close the dropdown if the user clicks outside it
         if self.dropdown_visible and event.type() == QEvent.Type.MouseButtonPress:
+            global_pos = QCursor.pos()
             if not self.dropdown.geometry().contains(
-                QCursor.pos()
-            ) and not self.button.geometry().contains(
-                self.mapFromGlobal(QCursor.pos())
-            ):
+                global_pos
+            ) and not self.geometry().contains(self.mapFromGlobal(global_pos)):
                 self.dropdown.hide()
                 self.dropdown_visible = False
         return super().eventFilter(obj, event)

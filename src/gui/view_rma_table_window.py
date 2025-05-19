@@ -192,8 +192,8 @@ class ViewRMATable(QDialog):
             filters_height + (row_height * row_count) + header_height + vertical_padding
         )
 
-        max_width = 1900
-        max_height = 1000
+        max_width = 1800
+        max_height = 800
 
         final_width = min(full_width, max_width)
         final_height = min(full_height, max_height)
