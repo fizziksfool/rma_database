@@ -15,6 +15,12 @@ QToolButton#statusFilterButton {
   border-bottom: 2px solid rgba(255, 255, 255, 51); /* 0.2 opacity */
 }
 
+QToolButton#statusFilterButton:hover {
+  background: #31363b;
+  border-right: 2px solid #31363b;
+  border-left: 2px solid #31363b;
+}
+
 /* QListWidget#clickableList */
 
 QListWidget#clickableList {
@@ -23,9 +29,8 @@ QListWidget#clickableList {
   border-radius: 4px;
 }
 
-QListWidget::item:hover {
-  background-color: #bef67a;
+QListWidget#clickableList::item:hover {
+  background-color: #bef67a; /*lightgreen*/
   color: black;
 }
-
 """
