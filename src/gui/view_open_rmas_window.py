@@ -67,7 +67,6 @@ class ViewOpenRMAsWindow(QDialog):
 
         self.filter_status_label = QLabel('Filter by Status:')
         selection_list = [
-            'Select All',
             'Issued',
             'Received',
             'In Process',
@@ -286,19 +285,24 @@ class MultiSelectDropdown(QWidget):
         self.dropdown_visible = False
 
         self.button = QToolButton(self)
+        self.button.setObjectName('statusFilterButton')
         self.button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.button.clicked.connect(self.toggle_dropdown)
 
         self.dropdown = ClickableListWidget(self)
+        self.dropdown.setObjectName('clickableList')
         self.dropdown.setWindowFlags(Qt.WindowType.Popup)
         self.dropdown.setFixedSize(210, 213)
         self.dropdown.checkedItemsChanged.connect(self.emit_selection_changed)
+        self.dropdown.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        self.button.setObjectName('statusFilterButton')
-        self.dropdown.setObjectName('clickableList')
         self.button.setStyleSheet(combo_style)
         self.dropdown.setStyleSheet(combo_style)
 
+        select_all = QListWidgetItem('Select All')
+        select_all.setFlags(select_all.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        select_all.setCheckState(Qt.CheckState.Checked)
+        self.dropdown.addItem(select_all)
         for text in items:
             item = QListWidgetItem(text)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
@@ -333,10 +337,9 @@ class MultiSelectDropdown(QWidget):
                 selected.append(list_item.text())
 
         self.selected_items = selected
-        all_options = ['Issued', 'Received', 'In Process', 'Complete']
 
         # check if all options are selected
-        if all(item in self.selected_items for item in all_options):
+        if all(item in self.selected_items for item in self.items):
             self.button.setText('No Filter')
         else:
             self.button.setText('Filtered')
