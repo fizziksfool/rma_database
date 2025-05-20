@@ -33,4 +33,11 @@ QListWidget#clickableList::item:hover {
   background-color: #bef67a; /*lightgreen*/
   color: black;
 }
+
+QListWidget#clickableList::item:focus {
+  background-color: #bef67a; /*lightgreen*/
+  color: black;
+}
+
+
 """
