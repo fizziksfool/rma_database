@@ -321,9 +321,12 @@ class MultiSelectDropdown(QWidget):
             self.dropdown.move(point)
             self.dropdown.setMinimumWidth(self.button.width())
             self.dropdown.show()
+            self.dropdown.setCurrentItem(self.dropdown.item(0))
+            self.dropdown.setFocus()
             self.dropdown_visible = True
         else:
             self.dropdown.hide()
+            self.setFocus()
             self.dropdown_visible = False
 
     def update_selection(self, item: QListWidgetItem) -> None:
