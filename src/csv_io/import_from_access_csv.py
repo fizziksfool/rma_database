@@ -1,3 +1,10 @@
+"""
+To use this script:
+Make sure the CSV_PATH variable points to the current HyperionRMAs.csv back up file in the RMA folder.
+Delete the rma.db file in the X/rma_database folder.
+Run the script as a module like this `python -m src.csv_io.import_from_access_csv`
+"""
+
 import csv
 from datetime import datetime
 from pathlib import Path
