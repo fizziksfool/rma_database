@@ -137,7 +137,7 @@ class ViewRMATable(QDialog):
         self.proxy_model.set_warranty_filter(warranty)
         self.table_view.resizeRowsToContents()
 
-    def apply_status_filter(self, status: str) -> None:
+    def apply_status_filter(self, status: list[str]) -> None:
         self.proxy_model.set_status_filter(status)
         self.table_view.resizeRowsToContents()
 
