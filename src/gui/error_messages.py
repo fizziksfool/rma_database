@@ -43,3 +43,9 @@ def open_pdf_failed_message(parent, error) -> None:
     title = 'Error'
     message = f'Failed to open printable RMA table.\n\n{str(error)}'
     QMessageBox.critical(parent, title, message)
+
+
+def no_quick_start_guide(parent) -> None:
+    title = 'No Quick Start Guide'
+    message = 'The Quick Start Guide has not been written yet.\n\nSorry....'
+    QMessageBox.information(parent, title, message)

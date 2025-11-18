@@ -20,6 +20,7 @@ from .add_windows import (
     AddRMAWindow,
     AddUserWindow,
 )
+from .error_messages import no_quick_start_guide
 from .view_open_rmas_window import ViewOpenRMAsWindow
 from .view_rma_records_window import ViewRMARecordsWindow
 from .view_rma_table_window import ViewRMATable
@@ -56,6 +57,9 @@ class MainWindow(QMainWindow):
     def _handle_add_part_number(self) -> None:
         add_part_number_window = AddPartNumberWindow(self)
         add_part_number_window.exec()
+
+    def _handle_open_quick_start_guide(self) -> None:
+        no_quick_start_guide(parent=self)
 
     def _handle_add_new_rma_button(self) -> None:
         add_new_rma_window = AddRMAWindow(self)
@@ -126,6 +130,9 @@ class MainWindow(QMainWindow):
         self.add_product_option.triggered.connect(self._handle_add_product)
         self.add_part_number_option.triggered.connect(self._handle_add_part_number)
         self.add_user_option.triggered.connect(self._handle_add_user)
+        self.open_quick_start_guide.triggered.connect(
+            self._handle_open_quick_start_guide
+        )
 
         # Create buttons to select csv file and analyze beam scan
         self.add_new_rma_button = QPushButton('Add New RMA')
